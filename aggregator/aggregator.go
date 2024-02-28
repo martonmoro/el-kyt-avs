@@ -3,8 +3,6 @@ package aggregator
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"math/big"
 	"sync"
 	"time"
 
@@ -82,8 +80,8 @@ type Aggregator struct {
 	httpServer *http.Server
 }
 
-type NumberToSquare struct {
-	NumberToSquare		string `json:"numberToSquare"`
+type AddressToKYT struct {
+	Address 			string `json:"address`
 }
 
 // NewAggregator creates a new Aggregator with the provided config.
@@ -141,25 +139,13 @@ func (agg *Aggregator) Start(ctx context.Context) error {
 	go agg.startServer(ctx)
 
 	// register endpoint for krnl node
-	http.HandleFunc("/send-task", agg.handleSendFromKRNL)
+	http.HandleFunc("/send-task-KYT", agg.handleSendFromKRNLKYT)
 
 	go func() {
 		if err := agg.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			agg.logger.Errorf("HTTP server error: %v", err)
 		}
 	}()
-
-	// // TODO(soubhik): refactor task generation/sending into a separate function that we can run as goroutine
-	// ticker := time.NewTicker(10 * time.Second)
-	// agg.logger.Infof("Aggregator set to send new task every 10 seconds...")
-	// defer ticker.Stop()
-	// taskNum := int64(0)
-	// // ticker doesn't tick immediately, so we send the first task here
-	// // see https://github.com/golang/go/issues/17601
-	// _ = agg.sendNewTask(big.NewInt(taskNum))
-	// taskNum++
-
-	// taskNum := int64(0)
 
 	for {
 		select {
@@ -168,13 +154,6 @@ func (agg *Aggregator) Start(ctx context.Context) error {
 		case blsAggServiceResp := <-agg.blsAggregationService.GetResponseChannel():
 			agg.logger.Info("Received response from blsAggregationService", "blsAggServiceResp", blsAggServiceResp)
 			agg.sendAggregatedResponseToContract(blsAggServiceResp)
-		// case <-ticker.C:
-		// 	err := agg.sendNewTask(big.NewInt(taskNum))
-		// 	taskNum++
-		// 	if err != nil {
-		// 		// we log the errors inside sendNewTask() so here we just continue to the next task
-		// 		continue
-		// 	}
 		}
 	}
 }
@@ -221,22 +200,15 @@ func (agg *Aggregator) sendAggregatedResponseToContract(blsAggServiceResp blsagg
 }
 
 // handleSendFromKRNL handles incoming task
-func (agg *Aggregator) handleSendFromKRNL( w http.ResponseWriter, r *http.Request) {
-	var numToSquare NumberToSquare
-	err := json.NewDecoder(r.Body).Decode(&numToSquare)
+func (agg *Aggregator) handleSendFromKRNLKYT( w http.ResponseWriter, r *http.Request) {
+	var address AddressToKYT
+	err := json.NewDecoder(r.Body).Decode(&address)
 	// numToSquare := req.URL.Query().Get("numToSquare")
-	fmt.Print("Body: ", numToSquare.NumberToSquare)
 	if err != nil {
 		// Handle error
 	}
-	if numToSquare.NumberToSquare != "" {
-		n := new(big.Int)
-		n, ok := n.SetString(numToSquare.NumberToSquare, 10)
-		if !ok {
-			fmt.Println("SetString: error")
-			return
-		}
-		err := agg.sendNewTask(n)
+	if address.Address != "" {
+		err := agg.sendNewTaskKYT(&address.Address)
 		if err != nil {
 			// we log the errors inside sendNewTask() so here we just continue to the next task
 		}
@@ -245,12 +217,12 @@ func (agg *Aggregator) handleSendFromKRNL( w http.ResponseWriter, r *http.Reques
 
 // sendNewTask sends a new task to the task manager contract, and updates the Task dict struct
 // with the information of operators opted into quorum 0 at the block of task creation.
-func (agg *Aggregator) sendNewTask(numToSquare *big.Int) error {
-	agg.logger.Info("Aggregator sending new task", "numberToSquare", numToSquare)
+func (agg *Aggregator) sendNewTaskKYT(address *string) error {
+	agg.logger.Info("Aggregator sending new task", "address", address)
 	// Send number to square to the task manager contract
-	newTask, taskIndex, err := agg.avsWriter.SendNewTaskNumberToSquare(context.Background(), numToSquare, types.QUORUM_THRESHOLD_NUMERATOR, types.QUORUM_NUMBERS)
+	newTask, taskIndex, err := agg.avsWriter.SendNewTaskKYT(context.Background(), address, types.QUORUM_THRESHOLD_NUMERATOR, types.QUORUM_NUMBERS)
 	if err != nil {
-		agg.logger.Error("Aggregator failed to send number to square", "err", err)
+		agg.logger.Error("Aggregator failed to send address to kyt", "err", err)
 		return err
 	}
 

@@ -15,6 +15,8 @@ import (
 	"github.com/Layr-Labs/incredible-squaring-avs/core/config"
 )
 
+import "../../contracts/bindings/KYTTaskManager"
+
 type AvsReaderer interface {
 	sdkavsregistry.AvsRegistryReader
 
