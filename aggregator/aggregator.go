@@ -2,9 +2,13 @@ package aggregator
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"math/big"
 	"sync"
 	"time"
+
+	"net/http"
 
 	"github.com/Layr-Labs/eigensdk-go/logging"
 
@@ -74,10 +78,21 @@ type Aggregator struct {
 	tasksMu               sync.RWMutex
 	taskResponses         map[types.TaskIndex]map[sdktypes.TaskResponseDigest]cstaskmanager.IIncredibleSquaringTaskManagerTaskResponse
 	taskResponsesMu       sync.RWMutex
+
+	httpServer *http.Server
+}
+
+type NumberToSquare struct {
+	NumberToSquare		string `json:"numberToSquare"`
 }
 
 // NewAggregator creates a new Aggregator with the provided config.
 func NewAggregator(c *config.Config) (*Aggregator, error) {
+
+	httpServer := &http.Server{
+        Addr:    ":8080",
+        Handler: http.DefaultServeMux,
+    }
 
 	avsReader, err := chainio.BuildAvsReaderFromConfig(c)
 	if err != nil {
@@ -116,6 +131,7 @@ func NewAggregator(c *config.Config) (*Aggregator, error) {
 		blsAggregationService: blsAggregationService,
 		tasks:                 make(map[types.TaskIndex]cstaskmanager.IIncredibleSquaringTaskManagerTask),
 		taskResponses:         make(map[types.TaskIndex]map[sdktypes.TaskResponseDigest]cstaskmanager.IIncredibleSquaringTaskManagerTaskResponse),
+		httpServer:			   httpServer,
 	}, nil
 }
 
@@ -124,15 +140,26 @@ func (agg *Aggregator) Start(ctx context.Context) error {
 	agg.logger.Infof("Starting aggregator rpc server.")
 	go agg.startServer(ctx)
 
-	// TODO(soubhik): refactor task generation/sending into a separate function that we can run as goroutine
-	ticker := time.NewTicker(10 * time.Second)
-	agg.logger.Infof("Aggregator set to send new task every 10 seconds...")
-	defer ticker.Stop()
-	taskNum := int64(0)
-	// ticker doesn't tick immediately, so we send the first task here
-	// see https://github.com/golang/go/issues/17601
-	_ = agg.sendNewTask(big.NewInt(taskNum))
-	taskNum++
+	// register endpoint for krnl node
+	http.HandleFunc("/send-task", agg.handleSendFromKRNL)
+
+	go func() {
+		if err := agg.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			agg.logger.Errorf("HTTP server error: %v", err)
+		}
+	}()
+
+	// // TODO(soubhik): refactor task generation/sending into a separate function that we can run as goroutine
+	// ticker := time.NewTicker(10 * time.Second)
+	// agg.logger.Infof("Aggregator set to send new task every 10 seconds...")
+	// defer ticker.Stop()
+	// taskNum := int64(0)
+	// // ticker doesn't tick immediately, so we send the first task here
+	// // see https://github.com/golang/go/issues/17601
+	// _ = agg.sendNewTask(big.NewInt(taskNum))
+	// taskNum++
+
+	// taskNum := int64(0)
 
 	for {
 		select {
@@ -141,13 +168,13 @@ func (agg *Aggregator) Start(ctx context.Context) error {
 		case blsAggServiceResp := <-agg.blsAggregationService.GetResponseChannel():
 			agg.logger.Info("Received response from blsAggregationService", "blsAggServiceResp", blsAggServiceResp)
 			agg.sendAggregatedResponseToContract(blsAggServiceResp)
-		case <-ticker.C:
-			err := agg.sendNewTask(big.NewInt(taskNum))
-			taskNum++
-			if err != nil {
-				// we log the errors inside sendNewTask() so here we just continue to the next task
-				continue
-			}
+		// case <-ticker.C:
+		// 	err := agg.sendNewTask(big.NewInt(taskNum))
+		// 	taskNum++
+		// 	if err != nil {
+		// 		// we log the errors inside sendNewTask() so here we just continue to the next task
+		// 		continue
+		// 	}
 		}
 	}
 }
@@ -190,6 +217,29 @@ func (agg *Aggregator) sendAggregatedResponseToContract(blsAggServiceResp blsagg
 	_, err := agg.avsWriter.SendAggregatedResponse(context.Background(), task, taskResponse, nonSignerStakesAndSignature)
 	if err != nil {
 		agg.logger.Error("Aggregator failed to respond to task", "err", err)
+	}
+}
+
+// handleSendFromKRNL handles incoming task
+func (agg *Aggregator) handleSendFromKRNL( w http.ResponseWriter, r *http.Request) {
+	var numToSquare NumberToSquare
+	err := json.NewDecoder(r.Body).Decode(&numToSquare)
+	// numToSquare := req.URL.Query().Get("numToSquare")
+	fmt.Print("Body: ", numToSquare.NumberToSquare)
+	if err != nil {
+		// Handle error
+	}
+	if numToSquare.NumberToSquare != "" {
+		n := new(big.Int)
+		n, ok := n.SetString(numToSquare.NumberToSquare, 10)
+		if !ok {
+			fmt.Println("SetString: error")
+			return
+		}
+		err := agg.sendNewTask(n)
+		if err != nil {
+			// we log the errors inside sendNewTask() so here we just continue to the next task
+		}
 	}
 }
 
