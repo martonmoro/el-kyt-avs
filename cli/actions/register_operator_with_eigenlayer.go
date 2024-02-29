@@ -6,9 +6,9 @@ import (
 	"log"
 
 	sdkutils "github.com/Layr-Labs/eigensdk-go/utils"
-	"github.com/Layr-Labs/incredible-squaring-avs/core/config"
-	"github.com/Layr-Labs/incredible-squaring-avs/operator"
-	"github.com/Layr-Labs/incredible-squaring-avs/types"
+	"github.com/martonmoro/incredible-squaring-avs/core/config"
+	"github.com/martonmoro/incredible-squaring-avs/operator"
+	"github.com/martonmoro/incredible-squaring-avs/types"
 )
 
 func RegisterOperatorWithEigenlayer(ctx *cli.Context) error {

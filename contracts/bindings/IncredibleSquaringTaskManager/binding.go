@@ -59,22 +59,22 @@ type IBLSSignatureCheckerQuorumStakeTotals struct {
 	TotalStakeForQuorum  []*big.Int
 }
 
-// IIncredibleSquaringTaskManagerTask is an auto generated low-level Go binding around an user-defined struct.
-type IIncredibleSquaringTaskManagerTask struct {
+// IKYTTaskManagerTask is an auto generated low-level Go binding around an user-defined struct.
+type IKYTTaskManagerTask struct {
 	NumberToBeSquared         *big.Int
 	TaskCreatedBlock          uint32
 	QuorumNumbers             []byte
 	QuorumThresholdPercentage uint32
 }
 
-// IIncredibleSquaringTaskManagerTaskResponse is an auto generated low-level Go binding around an user-defined struct.
-type IIncredibleSquaringTaskManagerTaskResponse struct {
+// IKYTTaskManagerTaskResponse is an auto generated low-level Go binding around an user-defined struct.
+type IKYTTaskManagerTaskResponse struct {
 	ReferenceTaskIndex uint32
 	NumberSquared      *big.Int
 }
 
-// IIncredibleSquaringTaskManagerTaskResponseMetadata is an auto generated low-level Go binding around an user-defined struct.
-type IIncredibleSquaringTaskManagerTaskResponseMetadata struct {
+// IKYTTaskManagerTaskResponseMetadata is an auto generated low-level Go binding around an user-defined struct.
+type IKYTTaskManagerTaskResponseMetadata struct {
 	TaskResponsedBlock uint32
 	HashOfNonSigners   [32]byte
 }
@@ -1114,21 +1114,21 @@ func (_ContractIncredibleSquaringTaskManager *ContractIncredibleSquaringTaskMana
 // RaiseAndResolveChallenge is a paid mutator transaction binding the contract method 0x6b532e9e.
 //
 // Solidity: function raiseAndResolveChallenge((uint256,uint32,bytes,uint32) task, (uint32,uint256) taskResponse, (uint32,bytes32) taskResponseMetadata, (uint256,uint256)[] pubkeysOfNonSigningOperators) returns()
-func (_ContractIncredibleSquaringTaskManager *ContractIncredibleSquaringTaskManagerTransactor) RaiseAndResolveChallenge(opts *bind.TransactOpts, task IIncredibleSquaringTaskManagerTask, taskResponse IIncredibleSquaringTaskManagerTaskResponse, taskResponseMetadata IIncredibleSquaringTaskManagerTaskResponseMetadata, pubkeysOfNonSigningOperators []BN254G1Point) (*types.Transaction, error) {
+func (_ContractIncredibleSquaringTaskManager *ContractIncredibleSquaringTaskManagerTransactor) RaiseAndResolveChallenge(opts *bind.TransactOpts, task IKYTTaskManagerTask, taskResponse IKYTTaskManagerTaskResponse, taskResponseMetadata IKYTTaskManagerTaskResponseMetadata, pubkeysOfNonSigningOperators []BN254G1Point) (*types.Transaction, error) {
 	return _ContractIncredibleSquaringTaskManager.contract.Transact(opts, "raiseAndResolveChallenge", task, taskResponse, taskResponseMetadata, pubkeysOfNonSigningOperators)
 }
 
 // RaiseAndResolveChallenge is a paid mutator transaction binding the contract method 0x6b532e9e.
 //
 // Solidity: function raiseAndResolveChallenge((uint256,uint32,bytes,uint32) task, (uint32,uint256) taskResponse, (uint32,bytes32) taskResponseMetadata, (uint256,uint256)[] pubkeysOfNonSigningOperators) returns()
-func (_ContractIncredibleSquaringTaskManager *ContractIncredibleSquaringTaskManagerSession) RaiseAndResolveChallenge(task IIncredibleSquaringTaskManagerTask, taskResponse IIncredibleSquaringTaskManagerTaskResponse, taskResponseMetadata IIncredibleSquaringTaskManagerTaskResponseMetadata, pubkeysOfNonSigningOperators []BN254G1Point) (*types.Transaction, error) {
+func (_ContractIncredibleSquaringTaskManager *ContractIncredibleSquaringTaskManagerSession) RaiseAndResolveChallenge(task IKYTTaskManagerTask, taskResponse IKYTTaskManagerTaskResponse, taskResponseMetadata IKYTTaskManagerTaskResponseMetadata, pubkeysOfNonSigningOperators []BN254G1Point) (*types.Transaction, error) {
 	return _ContractIncredibleSquaringTaskManager.Contract.RaiseAndResolveChallenge(&_ContractIncredibleSquaringTaskManager.TransactOpts, task, taskResponse, taskResponseMetadata, pubkeysOfNonSigningOperators)
 }
 
 // RaiseAndResolveChallenge is a paid mutator transaction binding the contract method 0x6b532e9e.
 //
 // Solidity: function raiseAndResolveChallenge((uint256,uint32,bytes,uint32) task, (uint32,uint256) taskResponse, (uint32,bytes32) taskResponseMetadata, (uint256,uint256)[] pubkeysOfNonSigningOperators) returns()
-func (_ContractIncredibleSquaringTaskManager *ContractIncredibleSquaringTaskManagerTransactorSession) RaiseAndResolveChallenge(task IIncredibleSquaringTaskManagerTask, taskResponse IIncredibleSquaringTaskManagerTaskResponse, taskResponseMetadata IIncredibleSquaringTaskManagerTaskResponseMetadata, pubkeysOfNonSigningOperators []BN254G1Point) (*types.Transaction, error) {
+func (_ContractIncredibleSquaringTaskManager *ContractIncredibleSquaringTaskManagerTransactorSession) RaiseAndResolveChallenge(task IKYTTaskManagerTask, taskResponse IKYTTaskManagerTaskResponse, taskResponseMetadata IKYTTaskManagerTaskResponseMetadata, pubkeysOfNonSigningOperators []BN254G1Point) (*types.Transaction, error) {
 	return _ContractIncredibleSquaringTaskManager.Contract.RaiseAndResolveChallenge(&_ContractIncredibleSquaringTaskManager.TransactOpts, task, taskResponse, taskResponseMetadata, pubkeysOfNonSigningOperators)
 }
 
@@ -1156,21 +1156,21 @@ func (_ContractIncredibleSquaringTaskManager *ContractIncredibleSquaringTaskMana
 // RespondToTask is a paid mutator transaction binding the contract method 0x5baec9a0.
 //
 // Solidity: function respondToTask((uint256,uint32,bytes,uint32) task, (uint32,uint256) taskResponse, (uint32[],(uint256,uint256)[],(uint256,uint256)[],(uint256[2],uint256[2]),(uint256,uint256),uint32[],uint32[],uint32[][]) nonSignerStakesAndSignature) returns()
-func (_ContractIncredibleSquaringTaskManager *ContractIncredibleSquaringTaskManagerTransactor) RespondToTask(opts *bind.TransactOpts, task IIncredibleSquaringTaskManagerTask, taskResponse IIncredibleSquaringTaskManagerTaskResponse, nonSignerStakesAndSignature IBLSSignatureCheckerNonSignerStakesAndSignature) (*types.Transaction, error) {
+func (_ContractIncredibleSquaringTaskManager *ContractIncredibleSquaringTaskManagerTransactor) RespondToTask(opts *bind.TransactOpts, task IKYTTaskManagerTask, taskResponse IKYTTaskManagerTaskResponse, nonSignerStakesAndSignature IBLSSignatureCheckerNonSignerStakesAndSignature) (*types.Transaction, error) {
 	return _ContractIncredibleSquaringTaskManager.contract.Transact(opts, "respondToTask", task, taskResponse, nonSignerStakesAndSignature)
 }
 
 // RespondToTask is a paid mutator transaction binding the contract method 0x5baec9a0.
 //
 // Solidity: function respondToTask((uint256,uint32,bytes,uint32) task, (uint32,uint256) taskResponse, (uint32[],(uint256,uint256)[],(uint256,uint256)[],(uint256[2],uint256[2]),(uint256,uint256),uint32[],uint32[],uint32[][]) nonSignerStakesAndSignature) returns()
-func (_ContractIncredibleSquaringTaskManager *ContractIncredibleSquaringTaskManagerSession) RespondToTask(task IIncredibleSquaringTaskManagerTask, taskResponse IIncredibleSquaringTaskManagerTaskResponse, nonSignerStakesAndSignature IBLSSignatureCheckerNonSignerStakesAndSignature) (*types.Transaction, error) {
+func (_ContractIncredibleSquaringTaskManager *ContractIncredibleSquaringTaskManagerSession) RespondToTask(task IKYTTaskManagerTask, taskResponse IKYTTaskManagerTaskResponse, nonSignerStakesAndSignature IBLSSignatureCheckerNonSignerStakesAndSignature) (*types.Transaction, error) {
 	return _ContractIncredibleSquaringTaskManager.Contract.RespondToTask(&_ContractIncredibleSquaringTaskManager.TransactOpts, task, taskResponse, nonSignerStakesAndSignature)
 }
 
 // RespondToTask is a paid mutator transaction binding the contract method 0x5baec9a0.
 //
 // Solidity: function respondToTask((uint256,uint32,bytes,uint32) task, (uint32,uint256) taskResponse, (uint32[],(uint256,uint256)[],(uint256,uint256)[],(uint256[2],uint256[2]),(uint256,uint256),uint32[],uint32[],uint32[][]) nonSignerStakesAndSignature) returns()
-func (_ContractIncredibleSquaringTaskManager *ContractIncredibleSquaringTaskManagerTransactorSession) RespondToTask(task IIncredibleSquaringTaskManagerTask, taskResponse IIncredibleSquaringTaskManagerTaskResponse, nonSignerStakesAndSignature IBLSSignatureCheckerNonSignerStakesAndSignature) (*types.Transaction, error) {
+func (_ContractIncredibleSquaringTaskManager *ContractIncredibleSquaringTaskManagerTransactorSession) RespondToTask(task IKYTTaskManagerTask, taskResponse IKYTTaskManagerTaskResponse, nonSignerStakesAndSignature IBLSSignatureCheckerNonSignerStakesAndSignature) (*types.Transaction, error) {
 	return _ContractIncredibleSquaringTaskManager.Contract.RespondToTask(&_ContractIncredibleSquaringTaskManager.TransactOpts, task, taskResponse, nonSignerStakesAndSignature)
 }
 
@@ -1462,7 +1462,7 @@ func (it *ContractIncredibleSquaringTaskManagerNewTaskCreatedIterator) Close() e
 // ContractIncredibleSquaringTaskManagerNewTaskCreated represents a NewTaskCreated event raised by the ContractIncredibleSquaringTaskManager contract.
 type ContractIncredibleSquaringTaskManagerNewTaskCreated struct {
 	TaskIndex uint32
-	Task      IIncredibleSquaringTaskManagerTask
+	Task      IKYTTaskManagerTask
 	Raw       types.Log // Blockchain specific contextual infos
 }
 
@@ -2623,8 +2623,8 @@ func (it *ContractIncredibleSquaringTaskManagerTaskRespondedIterator) Close() er
 
 // ContractIncredibleSquaringTaskManagerTaskResponded represents a TaskResponded event raised by the ContractIncredibleSquaringTaskManager contract.
 type ContractIncredibleSquaringTaskManagerTaskResponded struct {
-	TaskResponse         IIncredibleSquaringTaskManagerTaskResponse
-	TaskResponseMetadata IIncredibleSquaringTaskManagerTaskResponseMetadata
+	TaskResponse         IKYTTaskManagerTaskResponse
+	TaskResponseMetadata IKYTTaskManagerTaskResponseMetadata
 	Raw                  types.Log // Blockchain specific contextual infos
 }
 

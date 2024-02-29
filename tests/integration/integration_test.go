@@ -16,14 +16,14 @@ import (
 	sdklogging "github.com/Layr-Labs/eigensdk-go/logging"
 	"github.com/Layr-Labs/eigensdk-go/signerv2"
 	sdkutils "github.com/Layr-Labs/eigensdk-go/utils"
-	"github.com/Layr-Labs/incredible-squaring-avs/aggregator"
-	"github.com/Layr-Labs/incredible-squaring-avs/core/chainio"
-	"github.com/Layr-Labs/incredible-squaring-avs/core/config"
-	"github.com/Layr-Labs/incredible-squaring-avs/operator"
-	"github.com/Layr-Labs/incredible-squaring-avs/types"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/martonmoro/incredible-squaring-avs/aggregator"
+	"github.com/martonmoro/incredible-squaring-avs/core/chainio"
+	"github.com/martonmoro/incredible-squaring-avs/core/config"
+	"github.com/martonmoro/incredible-squaring-avs/operator"
+	"github.com/martonmoro/incredible-squaring-avs/types"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 )
@@ -51,9 +51,9 @@ func TestIntegration(t *testing.T) {
 	aggConfigRaw.EthRpcUrl = "http://" + anvilEndpoint
 	aggConfigRaw.EthWsUrl = "ws://" + anvilEndpoint
 
-	var credibleSquaringDeploymentRaw config.IncredibleSquaringDeploymentRaw
-	credibleSquaringDeploymentFilePath := "../../contracts/script/output/31337/credible_squaring_avs_deployment_output.json"
-	sdkutils.ReadJsonConfig(credibleSquaringDeploymentFilePath, &credibleSquaringDeploymentRaw)
+	var kytDeploymentRaw config.KYTDeploymentRaw
+	kytDeploymentFilePath := "../../contracts/script/output/31337/kyt_avs_deployment_output.json"
+	sdkutils.ReadJsonConfig(kytDeploymentFilePath, &kytDeploymentRaw)
 
 	logger, err := sdklogging.NewZapLogger(aggConfigRaw.Environment)
 	if err != nil {
@@ -99,8 +99,8 @@ func TestIntegration(t *testing.T) {
 		EthHttpClient:              ethRpcClient,
 		EthWsRpcUrl:                aggConfigRaw.EthWsUrl,
 		EthWsClient:                ethWsClient,
-		OperatorStateRetrieverAddr: common.HexToAddress(credibleSquaringDeploymentRaw.Addresses.OperatorStateRetrieverAddr),
-		IncredibleSquaringRegistryCoordinatorAddr: common.HexToAddress(credibleSquaringDeploymentRaw.Addresses.RegistryCoordinatorAddr),
+		OperatorStateRetrieverAddr: common.HexToAddress(kytDeploymentRaw.Addresses.OperatorStateRetrieverAddr),
+		KYTRegistryCoordinatorAddr: common.HexToAddress(kytDeploymentRaw.Addresses.RegistryCoordinatorAddr),
 		AggregatorServerIpPortAddr:                aggConfigRaw.AggregatorServerIpPortAddr,
 		RegisterOperatorOnStartup:                 aggConfigRaw.RegisterOperatorOnStartup,
 		TxMgr:                                     txMgr,
