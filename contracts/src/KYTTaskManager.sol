@@ -43,6 +43,9 @@ contract KYTTaskManager is
 
     mapping(uint32 => bool) public taskSuccesfullyChallenged;
 
+    //TODO: change to address
+    mapping(string => bool) public kytResults;
+
     address public aggregator;
     address public generator;
 
@@ -161,9 +164,15 @@ contract KYTTaskManager is
         allTaskResponses[taskResponse.referenceTaskIndex] = keccak256(
             abi.encode(taskResponse, taskResponseMetadata)
         );
+        // TODO: handle in challenge
+        kytResults[task.addressToKYT] = taskResponse.KYTResult;
 
         // emitting event
         emit TaskResponded(taskResponse, taskResponseMetadata);
+    }
+
+    function getKYTForAddress(string calldata addressToCheck) public view returns (bool) {
+        return kytResults[addressToCheck];
     }
 
     function taskNumber() external view returns (uint32) {

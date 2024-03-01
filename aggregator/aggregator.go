@@ -88,7 +88,7 @@ type AddressToKYT struct {
 func NewAggregator(c *config.Config) (*Aggregator, error) {
 
 	httpServer := &http.Server{
-        Addr:    ":8080",
+        Addr:    ":8081",
         Handler: http.DefaultServeMux,
     }
 
