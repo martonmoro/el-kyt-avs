@@ -43,7 +43,7 @@ const (
 )
 
 const kytAddressesSize = 4
-var kytAddresses = [kytAddressesSize]string{address1, address2, address3, address4}
+var kytAddresses = [kytAddressesSize]common.Address{common.HexToAddress(address1), common.HexToAddress(address2), common.HexToAddress(address3), common.HexToAddress(address4)}
 
 type Operator struct {
 	config    types.NodeConfig

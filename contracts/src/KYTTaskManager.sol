@@ -44,7 +44,7 @@ contract KYTTaskManager is
     mapping(uint32 => bool) public taskSuccesfullyChallenged;
 
     //TODO: change to address
-    mapping(string => bool) public kytResults;
+    mapping(address => bool) kytResults;
 
     address public aggregator;
     address public generator;
@@ -84,7 +84,7 @@ contract KYTTaskManager is
     /* FUNCTIONS */
     // NOTE: this function creates new task, assigns it a taskId
     function createNewTask(
-        string calldata addressToKYT,
+        address addressToKYT,
         uint32 quorumThresholdPercentage,
         bytes calldata quorumNumbers
     ) external onlyTaskGenerator {
@@ -171,8 +171,8 @@ contract KYTTaskManager is
         emit TaskResponded(taskResponse, taskResponseMetadata);
     }
 
-    function getKYTForAddress(string calldata addressToCheck) public view returns (bool) {
-        return kytResults[addressToCheck];
+    function getKYTForAddress() public view returns (bool) {
+        return kytResults[msg.sender];
     }
 
     function taskNumber() external view returns (uint32) {

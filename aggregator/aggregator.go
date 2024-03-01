@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"github.com/Layr-Labs/eigensdk-go/logging"
+	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/Layr-Labs/eigensdk-go/chainio/clients"
 	sdkclients "github.com/Layr-Labs/eigensdk-go/chainio/clients"
@@ -220,7 +221,7 @@ func (agg *Aggregator) handleSendFromKRNLKYT( w http.ResponseWriter, r *http.Req
 func (agg *Aggregator) sendNewTaskKYT(address *string) error {
 	agg.logger.Info("Aggregator sending new task", "address", address)
 	// Send number to square to the task manager contract
-	newTask, taskIndex, err := agg.avsWriter.SendNewTaskKYT(context.Background(), address, types.QUORUM_THRESHOLD_NUMERATOR, types.QUORUM_NUMBERS)
+	newTask, taskIndex, err := agg.avsWriter.SendNewTaskKYT(context.Background(), common.HexToAddress(*address), types.QUORUM_THRESHOLD_NUMERATOR, types.QUORUM_NUMBERS)
 	if err != nil {
 		agg.logger.Error("Aggregator failed to send address to kyt", "err", err)
 		return err

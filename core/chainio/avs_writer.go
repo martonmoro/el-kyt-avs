@@ -3,6 +3,7 @@ package chainio
 import (
 	"context"
 
+	"github.com/ethereum/go-ethereum/common"
 	gethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 
@@ -20,7 +21,7 @@ type AvsWriterer interface {
 
 	SendNewTaskKYT(
 		ctx context.Context,
-		address *string,
+		address common.Address,
 		quorumThresholdPercentage uint32,
 		quorumNumbers []byte,
 	) (cstaskmanager.IKYTTaskManagerTask, uint32, error)
@@ -74,13 +75,13 @@ func NewAvsWriter(avsRegistryWriter avsregistry.AvsRegistryWriter, avsServiceBin
 }
 
 // returns the tx receipt, as well as the task index (which it gets from parsing the tx receipt logs)
-func (w *AvsWriter) SendNewTaskKYT(ctx context.Context, address *string, quorumThresholdPercentage uint32, quorumNumbers []byte) (cstaskmanager.IKYTTaskManagerTask, uint32, error) {
+func (w *AvsWriter) SendNewTaskKYT(ctx context.Context, address common.Address, quorumThresholdPercentage uint32, quorumNumbers []byte) (cstaskmanager.IKYTTaskManagerTask, uint32, error) {
 	txOpts, err := w.TxMgr.GetNoSendTxOpts()
 	if err != nil {
 		w.logger.Errorf("Error getting tx opts")
 		return cstaskmanager.IKYTTaskManagerTask{}, 0, err
 	}
-	tx, err := w.AvsContractBindings.TaskManager.CreateNewTask(txOpts, *address, quorumThresholdPercentage, quorumNumbers)
+	tx, err := w.AvsContractBindings.TaskManager.CreateNewTask(txOpts, address, quorumThresholdPercentage, quorumNumbers)
 	if err != nil {
 		w.logger.Errorf("Error assembling CreateNewTask tx")
 		return cstaskmanager.IKYTTaskManagerTask{}, 0, err

@@ -26,7 +26,7 @@ interface IKYTTaskManager {
 
     // STRUCTS
     struct Task {
-        string addressToKYT;
+        address addressToKYT;
         uint32 taskCreatedBlock;
         // task submitter decides on the criteria for a task to be completed
         // note that this does not mean the task was "correctly" answered (i.e. the number was squared correctly)
@@ -58,7 +58,7 @@ interface IKYTTaskManager {
     // FUNCTIONS
     // NOTE: this function creates new task.
     function createNewTask(
-        string calldata addressToKYT,
+        address addressToKYT,
         uint32 quorumThresholdPercentage,
         bytes calldata quorumNumbers
     ) external;

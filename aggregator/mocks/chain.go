@@ -3,6 +3,8 @@ package mocks
 import (
 	"math/big"
 
+	"github.com/ethereum/go-ethereum/common"
+
 	opstateretriever "github.com/Layr-Labs/eigensdk-go/contracts/bindings/OperatorStateRetriever"
 	"github.com/Layr-Labs/eigensdk-go/crypto/bls"
 	"github.com/martonmoro/incredible-squaring-avs/aggregator/types"
@@ -11,7 +13,7 @@ import (
 
 // ====== TaskManager Mocks ======
 
-func MockSendNewTaskNumberToSquareCall(blockNum uint32, taskNum uint32, address string) (cstaskmanager.IKYTTaskManagerTask, uint32, error) {
+func MockSendNewTaskNumberToSquareCall(blockNum uint32, taskNum uint32, address common.Address) (cstaskmanager.IKYTTaskManagerTask, uint32, error) {
 	task := cstaskmanager.IKYTTaskManagerTask{
 		AddressToKYT:              address,
 		TaskCreatedBlock:          blockNum,

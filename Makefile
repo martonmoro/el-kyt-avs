@@ -31,6 +31,9 @@ start-anvil-chain-with-el-and-avs-deployed: ## starts anvil from a saved state f
 bindings: ## generates contract bindings
 	cd contracts && ./generate-go-bindings.sh
 
+bindings-avs: ## generates contract bindings for avs
+	cd contracts && ./generate-go-bindings-avs.sh
+
 ___DOCKER___: ## 
 docker-build-and-publish-images: ## builds and publishes operator and aggregator docker images using Ko
 	KO_DOCKER_REPO=ghcr.io/layr-labs/incredible-squaring ko build aggregator/cmd/main.go --preserve-import-paths

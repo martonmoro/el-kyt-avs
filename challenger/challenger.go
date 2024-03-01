@@ -5,6 +5,8 @@ import (
 	"context"
 	"math/big"
 
+	gethcommon "github.com/ethereum/go-ethereum/common"
+
 	ethclient "github.com/Layr-Labs/eigensdk-go/chainio/clients/eth"
 	"github.com/Layr-Labs/eigensdk-go/logging"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -24,7 +26,7 @@ const (
 )
 
 const kytAddressesSize = 4
-var kytAddresses = [kytAddressesSize]string{address1, address2, address3, address4}
+var kytAddresses = [kytAddressesSize]gethcommon.Address{gethcommon.HexToAddress(address1), gethcommon.HexToAddress(address2), gethcommon.HexToAddress(address3), gethcommon.HexToAddress(address4)}
 
 type Challenger struct {
 	logger             logging.Logger
