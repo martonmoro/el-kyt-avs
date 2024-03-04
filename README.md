@@ -35,10 +35,6 @@ Register the operator with eigenlayer and kyt, and then start the process:
 make start-operator
 ```
 
-## Running via docker compose
-
-We wrote a [docker-compose.yml](./docker-compose.yml) file to run and test everything on a single machine. It will start an anvil instance, loading a [state](./tests/anvil/avs-and-eigenlayer-deployed-anvil-state.json) where the eigenlayer and kyt contracts are deployed, start the aggregator, and finally one operator, along with prometheus and grafana servers. The grafana server will be available at http://localhost:3000, with user and password both set to `admin`. We have created a simple [grafana dashboard](./grafana/provisioning/dashboards/AVSs/incredible_squaring.json) which can be used as a starting example and expanded to include AVS specific metrics. The eigen metrics should not be added to this dashboard as they will be exposed on the main eigenlayer dashboard provided by the eigenlayer-cli.
-
 ## Avs Task Description
 
 The architecture of the AVS contains:
@@ -81,8 +77,6 @@ The architecture of the AVS contains:
 Every AVS node implementation is required to abide by the [Eigenlayer AVS Node Specification](https://eigen.nethermind.io/). The hard requirements are currently only to:
 - implement the [AVS Node API](https://eigen.nethermind.io/docs/category/avs-node-api)
 - implement the [eigen prometheus metrics](https://eigen.nethermind.io/docs/category/metrics)
-
-If you are using golang, you can use our [metrics](https://github.com/Layr-Labs/eigensdk-go/tree/master/metrics) and [nodeapi](https://github.com/Layr-Labs/eigensdk-go/tree/master/nodeapi) implementation in the [eigensdk](https://github.com/Layr-Labs/eigensdk-go), just like this repo does. Otherwise, you will have to implement it on your own.
 
 ## Ports
 
