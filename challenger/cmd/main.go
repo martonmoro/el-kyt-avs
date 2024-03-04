@@ -9,8 +9,8 @@ import (
 
 	"github.com/urfave/cli"
 
-	"github.com/martonmoro/incredible-squaring-avs/challenger"
-	"github.com/martonmoro/incredible-squaring-avs/core/config"
+	"github.com/martonmoro/el-kyt-avs/challenger"
+	"github.com/martonmoro/el-kyt-avs/core/config"
 )
 
 var (

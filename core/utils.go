@@ -5,7 +5,7 @@ import (
 
 	"github.com/Layr-Labs/eigensdk-go/crypto/bls"
 	"github.com/ethereum/go-ethereum/accounts/abi"
-	cstaskmanager "github.com/martonmoro/incredible-squaring-avs/contracts/bindings/KYTTaskManager"
+	cstaskmanager "github.com/martonmoro/el-kyt-avs/contracts/bindings/KYTTaskManager"
 	"golang.org/x/crypto/sha3"
 )
 

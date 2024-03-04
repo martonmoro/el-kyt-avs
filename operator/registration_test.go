@@ -9,9 +9,9 @@ import (
 	"github.com/Layr-Labs/eigensdk-go/crypto/bls"
 	sdklogging "github.com/Layr-Labs/eigensdk-go/logging"
 
-	cstaskmanager "github.com/martonmoro/incredible-squaring-avs/contracts/bindings/KYTTaskManager"
-	"github.com/martonmoro/incredible-squaring-avs/metrics"
-	"github.com/martonmoro/incredible-squaring-avs/tests"
+	cstaskmanager "github.com/martonmoro/el-kyt-avs/contracts/bindings/KYTTaskManager"
+	"github.com/martonmoro/el-kyt-avs/metrics"
+	"github.com/martonmoro/el-kyt-avs/tests"
 )
 
 const MOCK_OPERATOR_BLS_PRIVATE_KEY = "69"

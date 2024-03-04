@@ -17,10 +17,10 @@ import (
 	blsaggservmock "github.com/Layr-Labs/eigensdk-go/services/mocks/blsagg"
 	sdktypes "github.com/Layr-Labs/eigensdk-go/types"
 
-	"github.com/martonmoro/incredible-squaring-avs/aggregator/mocks"
-	"github.com/martonmoro/incredible-squaring-avs/aggregator/types"
-	cstaskmanager "github.com/martonmoro/incredible-squaring-avs/contracts/bindings/KYTTaskManager"
-	chainiomocks "github.com/martonmoro/incredible-squaring-avs/core/chainio/mocks"
+	"github.com/martonmoro/el-kyt-avs/aggregator/mocks"
+	"github.com/martonmoro/el-kyt-avs/aggregator/types"
+	cstaskmanager "github.com/martonmoro/el-kyt-avs/contracts/bindings/KYTTaskManager"
+	chainiomocks "github.com/martonmoro/el-kyt-avs/core/chainio/mocks"
 )
 
 var MOCK_OPERATOR_ID = [32]byte{207, 73, 226, 221, 104, 100, 123, 41, 192, 3, 9, 119, 90, 83, 233, 159, 231, 151, 245, 96, 150, 48, 144, 27, 102, 253, 39, 101, 1, 26, 135, 173}
@@ -30,7 +30,7 @@ var MOCK_OPERATOR_BLS_PRIVATE_KEY_STRING = "50"
 type MockTask struct {
 	TaskNum        uint32
 	BlockNumber    uint32
-	NumberToSquare uint32
+	addressToKYT   common.Address
 }
 
 func TestSendNewTask(t *testing.T) {
@@ -58,12 +58,11 @@ func TestSendNewTask(t *testing.T) {
 
 	var TASK_INDEX = uint32(0)
 	var BLOCK_NUMBER = uint32(100)
-	var NUMBER_TO_SQUARE = uint32(3)
-	var NUMBER_TO_SQUARE_BIG_INT = big.NewInt(int64(NUMBER_TO_SQUARE))
+	var ADDRESS_TO_KYT = common.HexToAddress("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266")
 
 	mockAvsWriterer.EXPECT().SendNewTaskNumberToSquare(
 		context.Background(), NUMBER_TO_SQUARE_BIG_INT, types.QUORUM_THRESHOLD_NUMERATOR, types.QUORUM_NUMBERS,
-	).Return(mocks.MockSendNewTaskNumberToSquareCall(BLOCK_NUMBER, TASK_INDEX, NUMBER_TO_SQUARE))
+	).Return(mocks.MockSendNewTaskAdressToKYTCall(BLOCK_NUMBER, TASK_INDEX, ADDRESS_TO_KYT))
 
 	// 100 blocks, each takes 12 seconds. We hardcode for now since aggregator also hardcodes this value
 	taskTimeToExpiry := 100 * 12 * time.Second

@@ -10,9 +10,9 @@ import (
 
 	"github.com/Layr-Labs/eigensdk-go/crypto/bls"
 	sdktypes "github.com/Layr-Labs/eigensdk-go/types"
-	"github.com/martonmoro/incredible-squaring-avs/aggregator/types"
-	cstaskmanager "github.com/martonmoro/incredible-squaring-avs/contracts/bindings/KYTTaskManager"
-	"github.com/martonmoro/incredible-squaring-avs/core"
+	"github.com/martonmoro/el-kyt-avs/aggregator/types"
+	cstaskmanager "github.com/martonmoro/el-kyt-avs/contracts/bindings/KYTTaskManager"
+	"github.com/martonmoro/el-kyt-avs/core"
 )
 
 func TestProcessSignedTaskResponse(t *testing.T) {
@@ -63,7 +63,7 @@ func TestProcessSignedTaskResponse(t *testing.T) {
 func createMockSignedTaskResponse(mockTask MockTask, keypair bls.KeyPair) (*SignedTaskResponse, error) {
 	taskResponse := &cstaskmanager.IKYTTaskManagerTaskResponse{
 		ReferenceTaskIndex: mockTask.TaskNum,
-		KYTResult:      true,
+		KYTResult:          true,
 	}
 	taskResponseHash, err := core.GetTaskResponseDigest(taskResponse)
 	if err != nil {

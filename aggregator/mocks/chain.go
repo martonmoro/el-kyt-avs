@@ -7,13 +7,13 @@ import (
 
 	opstateretriever "github.com/Layr-Labs/eigensdk-go/contracts/bindings/OperatorStateRetriever"
 	"github.com/Layr-Labs/eigensdk-go/crypto/bls"
-	"github.com/martonmoro/incredible-squaring-avs/aggregator/types"
-	cstaskmanager "github.com/martonmoro/incredible-squaring-avs/contracts/bindings/KYTTaskManager"
+	"github.com/martonmoro/el-kyt-avs/aggregator/types"
+	cstaskmanager "github.com/martonmoro/el-kyt-avs/contracts/bindings/KYTTaskManager"
 )
 
 // ====== TaskManager Mocks ======
 
-func MockSendNewTaskNumberToSquareCall(blockNum uint32, taskNum uint32, address common.Address) (cstaskmanager.IKYTTaskManagerTask, uint32, error) {
+func MockSendNewTaskAdressToKYTCall(blockNum uint32, taskNum uint32, address common.Address) (cstaskmanager.IKYTTaskManagerTask, uint32, error) {
 	task := cstaskmanager.IKYTTaskManagerTask{
 		AddressToKYT:              address,
 		TaskCreatedBlock:          blockNum,

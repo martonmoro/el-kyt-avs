@@ -3,7 +3,7 @@ package types
 import (
 	"errors"
 
-	cstaskmanager "github.com/martonmoro/incredible-squaring-avs/contracts/bindings/KYTTaskManager"
+	cstaskmanager "github.com/martonmoro/el-kyt-avs/contracts/bindings/KYTTaskManager"
 )
 
 type TaskResponseData struct {

@@ -1,7 +1,5 @@
 # EigenLayer KYT AVS
 
-<b> Do not use it in Production, testnet only. </b>
-
 Basic repo demoing a simple AVS middleware with full eigenlayer integration.
 
 ## Dependencies
@@ -59,7 +57,14 @@ The architecture of the AVS contains:
 - Operators
   - Check the address to be KYTd sent to the task manager by the task generator, sign it, and send it to the aggregator
 
-1. A task generator (in our case, same as the aggregator) publishes tasks when received through the httpServer to the KYTTaskManager contract's [createNewTask](contracts/src/KYTTaskManager.sol#L86) function. Each task specifies an address `addressToKYT` for which it wants the currently opted-in operators to determine the KYT result. `createNewTask` also takes `quorumNumbers` and `quorumThresholdPercentage` which requests that each listed quorum (we only use quorumNumber 0) needs to reach at least thresholdPercentage of operator signatures.
+1. A task generator (in our case, same as the aggregator) publishes tasks (when received through the httpServer) to the KYTTaskManager contract's [createNewTask](contracts/src/KYTTaskManager.sol#L86) function. Each task specifies an address `addressToKYT` for which it wants the currently opted-in operators to determine the KYT result. `createNewTask` also takes `quorumNumbers` and `quorumThresholdPercentage` which requests that each listed quorum (we only use quorumNumber 0) needs to reach at least thresholdPercentage of operator signatures.
+   - The task has to be sent to the `/send-task-KYT` endpoint
+   - An example task looks the followings:
+      ```json
+      {
+        "address": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+      }
+      ```
 
 2. A [registry](https://github.com/Layr-Labs/eigenlayer-middleware/blob/master/src/BLSRegistryCoordinatorWithIndices.sol) contract is deployed that allows any eigenlayer operator with at least 1 delegated [mockerc20](contracts/src/ERC20Mock.sol) token to opt-in to this AVS and also de-register from this AVS.
 
@@ -79,6 +84,10 @@ Every AVS node implementation is required to abide by the [Eigenlayer AVS Node S
 
 If you are using golang, you can use our [metrics](https://github.com/Layr-Labs/eigensdk-go/tree/master/metrics) and [nodeapi](https://github.com/Layr-Labs/eigensdk-go/tree/master/nodeapi) implementation in the [eigensdk](https://github.com/Layr-Labs/eigensdk-go), just like this repo does. Otherwise, you will have to implement it on your own.
 
-## StakeUpdates Cronjob
+## Ports
 
-AVS Registry contracts have a stale view of operator shares in the delegation manager contract. In order to update their stake table, they need to periodically call the [StakeRegistry.updateStakes()](https://github.com/Layr-Labs/eigenlayer-middleware/blob/f171a0812126bbb0bb6d44f53c622591a643e987/src/StakeRegistry.sol#L76) function. We are currently writing a cronjob binary to do this for you, will be open sourced soon!
+- The local anvil chain runs on `8546`
+- The aggregator server ip port address is `8090`
+- The endpoint to send kyt tasks to the task generator is `8081/send-task-KYT`
+
+

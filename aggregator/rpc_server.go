@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"net/rpc"
 
-	cstaskmanager "github.com/martonmoro/incredible-squaring-avs/contracts/bindings/KYTTaskManager"
-	"github.com/martonmoro/incredible-squaring-avs/core"
+	cstaskmanager "github.com/martonmoro/el-kyt-avs/contracts/bindings/KYTTaskManager"
+	"github.com/martonmoro/el-kyt-avs/core"
 
 	"github.com/Layr-Labs/eigensdk-go/crypto/bls"
 	sdktypes "github.com/Layr-Labs/eigensdk-go/types"

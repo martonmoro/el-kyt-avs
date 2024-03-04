@@ -1,4 +1,4 @@
-module github.com/martonmoro/incredible-squaring-avs
+module github.com/martonmoro/el-kyt-avs
 
 go 1.21
 

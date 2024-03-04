@@ -10,22 +10,23 @@ import (
 	ethclient "github.com/Layr-Labs/eigensdk-go/chainio/clients/eth"
 	"github.com/Layr-Labs/eigensdk-go/logging"
 	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/martonmoro/incredible-squaring-avs/common"
-	"github.com/martonmoro/incredible-squaring-avs/core/config"
+	"github.com/martonmoro/el-kyt-avs/common"
+	"github.com/martonmoro/el-kyt-avs/core/config"
 
-	"github.com/martonmoro/incredible-squaring-avs/challenger/types"
-	cstaskmanager "github.com/martonmoro/incredible-squaring-avs/contracts/bindings/KYTTaskManager"
-	"github.com/martonmoro/incredible-squaring-avs/core/chainio"
+	"github.com/martonmoro/el-kyt-avs/challenger/types"
+	cstaskmanager "github.com/martonmoro/el-kyt-avs/contracts/bindings/KYTTaskManager"
+	"github.com/martonmoro/el-kyt-avs/core/chainio"
 )
 
 const (
-    address1 = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
-    address2 = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
-    address3 = "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC"
-    address4 = "0x90F79bf6EB2c4f870365E785982E1f101E93b906"
+	address1 = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+	address2 = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
+	address3 = "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC"
+	address4 = "0x90F79bf6EB2c4f870365E785982E1f101E93b906"
 )
 
 const kytAddressesSize = 4
+
 var kytAddresses = [kytAddressesSize]gethcommon.Address{gethcommon.HexToAddress(address1), gethcommon.HexToAddress(address2), gethcommon.HexToAddress(address3), gethcommon.HexToAddress(address4)}
 
 type Challenger struct {
@@ -152,11 +153,11 @@ func (c *Challenger) callChallengeModule(taskIndex uint32) error {
 	answerInResponse := c.taskResponses[taskIndex].TaskResponse.KYTResult
 	trueAnswer := false
 	for _, addr := range kytAddresses {
-        if addr == addressToBeKYTd {
-            trueAnswer = true
-            break
-        }
-    }
+		if addr == addressToBeKYTd {
+			trueAnswer = true
+			break
+		}
+	}
 
 	// checking if the answer in the response submitted by aggregator is correct
 	if trueAnswer == answerInResponse {

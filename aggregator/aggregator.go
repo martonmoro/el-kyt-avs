@@ -17,12 +17,12 @@ import (
 	blsagg "github.com/Layr-Labs/eigensdk-go/services/bls_aggregation"
 	oppubkeysserv "github.com/Layr-Labs/eigensdk-go/services/operatorpubkeys"
 	sdktypes "github.com/Layr-Labs/eigensdk-go/types"
-	"github.com/martonmoro/incredible-squaring-avs/aggregator/types"
-	"github.com/martonmoro/incredible-squaring-avs/core"
-	"github.com/martonmoro/incredible-squaring-avs/core/chainio"
-	"github.com/martonmoro/incredible-squaring-avs/core/config"
+	"github.com/martonmoro/el-kyt-avs/aggregator/types"
+	"github.com/martonmoro/el-kyt-avs/core"
+	"github.com/martonmoro/el-kyt-avs/core/chainio"
+	"github.com/martonmoro/el-kyt-avs/core/config"
 
-	cstaskmanager "github.com/martonmoro/incredible-squaring-avs/contracts/bindings/KYTTaskManager"
+	cstaskmanager "github.com/martonmoro/el-kyt-avs/contracts/bindings/KYTTaskManager"
 )
 
 const (
@@ -31,7 +31,7 @@ const (
 	// ideally be fetched from the contracts
 	taskChallengeWindowBlock = 100
 	blockTimeSeconds         = 12 * time.Second
-	avsName                  = "incredible-squaring"
+	avsName                  = "kyt"
 )
 
 // Aggregator sends tasks (numbers to square) onchain, then listens for operator signed TaskResponses.
@@ -82,16 +82,16 @@ type Aggregator struct {
 }
 
 type AddressToKYT struct {
-	Address 			string `json:"address`
+	Address string `json:"address`
 }
 
 // NewAggregator creates a new Aggregator with the provided config.
 func NewAggregator(c *config.Config) (*Aggregator, error) {
 
 	httpServer := &http.Server{
-        Addr:    ":8081",
-        Handler: http.DefaultServeMux,
-    }
+		Addr:    ":8081",
+		Handler: http.DefaultServeMux,
+	}
 
 	avsReader, err := chainio.BuildAvsReaderFromConfig(c)
 	if err != nil {
@@ -130,7 +130,7 @@ func NewAggregator(c *config.Config) (*Aggregator, error) {
 		blsAggregationService: blsAggregationService,
 		tasks:                 make(map[types.TaskIndex]cstaskmanager.IKYTTaskManagerTask),
 		taskResponses:         make(map[types.TaskIndex]map[sdktypes.TaskResponseDigest]cstaskmanager.IKYTTaskManagerTaskResponse),
-		httpServer:			   httpServer,
+		httpServer:            httpServer,
 	}, nil
 }
 
@@ -201,7 +201,7 @@ func (agg *Aggregator) sendAggregatedResponseToContract(blsAggServiceResp blsagg
 }
 
 // handleSendFromKRNL handles incoming task
-func (agg *Aggregator) handleSendFromKRNLKYT( w http.ResponseWriter, r *http.Request) {
+func (agg *Aggregator) handleSendFromKRNLKYT(w http.ResponseWriter, r *http.Request) {
 	var address AddressToKYT
 	err := json.NewDecoder(r.Body).Decode(&address)
 	// numToSquare := req.URL.Query().Get("numToSquare")

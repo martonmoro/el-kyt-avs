@@ -19,8 +19,8 @@ import (
 	"github.com/Layr-Labs/eigensdk-go/utils"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/martonmoro/incredible-squaring-avs/core/chainio"
-	"github.com/martonmoro/incredible-squaring-avs/types"
+	"github.com/martonmoro/el-kyt-avs/core/chainio"
+	"github.com/martonmoro/el-kyt-avs/types"
 	"github.com/urfave/cli"
 )
 

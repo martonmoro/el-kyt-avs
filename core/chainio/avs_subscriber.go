@@ -9,8 +9,8 @@ import (
 	"github.com/Layr-Labs/eigensdk-go/chainio/clients/eth"
 	sdklogging "github.com/Layr-Labs/eigensdk-go/logging"
 
-	cstaskmanager "github.com/martonmoro/incredible-squaring-avs/contracts/bindings/KYTTaskManager"
-	"github.com/martonmoro/incredible-squaring-avs/core/config"
+	cstaskmanager "github.com/martonmoro/el-kyt-avs/contracts/bindings/KYTTaskManager"
+	"github.com/martonmoro/el-kyt-avs/core/config"
 )
 
 type AvsSubscriberer interface {

@@ -7,10 +7,10 @@ import (
 	"math/big"
 
 	sdkutils "github.com/Layr-Labs/eigensdk-go/utils"
-	"github.com/martonmoro/incredible-squaring-avs/core/config"
-	"github.com/martonmoro/incredible-squaring-avs/operator"
-	"github.com/martonmoro/incredible-squaring-avs/types"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/martonmoro/el-kyt-avs/core/config"
+	"github.com/martonmoro/el-kyt-avs/operator"
+	"github.com/martonmoro/el-kyt-avs/types"
 	"github.com/urfave/cli"
 )
 

@@ -19,11 +19,11 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/martonmoro/incredible-squaring-avs/aggregator"
-	"github.com/martonmoro/incredible-squaring-avs/core/chainio"
-	"github.com/martonmoro/incredible-squaring-avs/core/config"
-	"github.com/martonmoro/incredible-squaring-avs/operator"
-	"github.com/martonmoro/incredible-squaring-avs/types"
+	"github.com/martonmoro/el-kyt-avs/aggregator"
+	"github.com/martonmoro/el-kyt-avs/core/chainio"
+	"github.com/martonmoro/el-kyt-avs/core/config"
+	"github.com/martonmoro/el-kyt-avs/operator"
+	"github.com/martonmoro/el-kyt-avs/types"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 )
@@ -101,10 +101,10 @@ func TestIntegration(t *testing.T) {
 		EthWsClient:                ethWsClient,
 		OperatorStateRetrieverAddr: common.HexToAddress(kytDeploymentRaw.Addresses.OperatorStateRetrieverAddr),
 		KYTRegistryCoordinatorAddr: common.HexToAddress(kytDeploymentRaw.Addresses.RegistryCoordinatorAddr),
-		AggregatorServerIpPortAddr:                aggConfigRaw.AggregatorServerIpPortAddr,
-		RegisterOperatorOnStartup:                 aggConfigRaw.RegisterOperatorOnStartup,
-		TxMgr:                                     txMgr,
-		AggregatorAddress:                         aggregatorAddr,
+		AggregatorServerIpPortAddr: aggConfigRaw.AggregatorServerIpPortAddr,
+		RegisterOperatorOnStartup:  aggConfigRaw.RegisterOperatorOnStartup,
+		TxMgr:                      txMgr,
+		AggregatorAddress:          aggregatorAddr,
 	}
 
 	/* Prepare the config file for operator */

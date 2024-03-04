@@ -9,12 +9,12 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/martonmoro/incredible-squaring-avs/aggregator"
-	cstaskmanager "github.com/martonmoro/incredible-squaring-avs/contracts/bindings/KYTTaskManager"
-	"github.com/martonmoro/incredible-squaring-avs/core"
-	"github.com/martonmoro/incredible-squaring-avs/core/chainio"
-	"github.com/martonmoro/incredible-squaring-avs/metrics"
-	"github.com/martonmoro/incredible-squaring-avs/types"
+	"github.com/martonmoro/el-kyt-avs/aggregator"
+	cstaskmanager "github.com/martonmoro/el-kyt-avs/contracts/bindings/KYTTaskManager"
+	"github.com/martonmoro/el-kyt-avs/core"
+	"github.com/martonmoro/el-kyt-avs/core/chainio"
+	"github.com/martonmoro/el-kyt-avs/metrics"
+	"github.com/martonmoro/el-kyt-avs/types"
 
 	"github.com/Layr-Labs/eigensdk-go/chainio/clients"
 	sdkelcontracts "github.com/Layr-Labs/eigensdk-go/chainio/clients/elcontracts"
@@ -36,13 +36,14 @@ const AVS_NAME = "incredible-squaring"
 const SEM_VER = "0.0.1"
 
 const (
-    address1 = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
-    address2 = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
-    address3 = "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC"
-    address4 = "0x90F79bf6EB2c4f870365E785982E1f101E93b906"
+	address1 = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+	address2 = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
+	address3 = "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC"
+	address4 = "0x90F79bf6EB2c4f870365E785982E1f101E93b906"
 )
 
 const kytAddressesSize = 4
+
 var kytAddresses = [kytAddressesSize]common.Address{common.HexToAddress(address1), common.HexToAddress(address2), common.HexToAddress(address3), common.HexToAddress(address4)}
 
 type Operator struct {
@@ -325,14 +326,14 @@ func (o *Operator) ProcessNewTaskCreatedLog(newTaskCreatedLog *cstaskmanager.Con
 	addressToKYT := newTaskCreatedLog.Task.AddressToKYT
 	isKYTPass := false
 	for _, addr := range kytAddresses {
-        if addr == addressToKYT {
-            isKYTPass = true
-            break
-        }
-    }
+		if addr == addressToKYT {
+			isKYTPass = true
+			break
+		}
+	}
 	taskResponse := &cstaskmanager.IKYTTaskManagerTaskResponse{
 		ReferenceTaskIndex: newTaskCreatedLog.TaskIndex,
-		KYTResult:      isKYTPass,
+		KYTResult:          isKYTPass,
 	}
 	return taskResponse
 }

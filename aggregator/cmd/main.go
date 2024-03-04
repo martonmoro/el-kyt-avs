@@ -9,8 +9,8 @@ import (
 
 	"github.com/urfave/cli"
 
-	"github.com/martonmoro/incredible-squaring-avs/aggregator"
-	"github.com/martonmoro/incredible-squaring-avs/core/config"
+	"github.com/martonmoro/el-kyt-avs/aggregator"
+	"github.com/martonmoro/el-kyt-avs/core/config"
 )
 
 var (
@@ -25,9 +25,9 @@ func main() {
 	app := cli.NewApp()
 	app.Flags = config.Flags
 	app.Version = fmt.Sprintf("%s-%s-%s", Version, GitCommit, GitDate)
-	app.Name = "credible-squaring-aggregator"
-	app.Usage = "Credible Squaring Aggregator"
-	app.Description = "Service that sends number to be credibly squared by operator nodes."
+	app.Name = "kyt-aggregator"
+	app.Usage = "KYT Aggregator"
+	app.Description = "Service that sends addresses to be KYTd by operator nodes."
 
 	app.Action = aggregatorMain
 	err := app.Run(os.Args)
