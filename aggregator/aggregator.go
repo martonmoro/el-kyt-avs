@@ -34,7 +34,7 @@ const (
 	avsName                  = "kyt"
 )
 
-// Aggregator sends tasks (numbers to square) onchain, then listens for operator signed TaskResponses.
+// Aggregator sends tasks (address to kyt) onchain, then listens for operator signed TaskResponses.
 // It aggregates responses signatures, and if any of the TaskResponses reaches the QuorumThresholdPercentage for each quorum
 // (currently we only use a single quorum of the ERC20Mock token), it sends the aggregated TaskResponse and signature onchain.
 //
@@ -204,14 +204,13 @@ func (agg *Aggregator) sendAggregatedResponseToContract(blsAggServiceResp blsagg
 func (agg *Aggregator) handleSendFromKRNLKYT(w http.ResponseWriter, r *http.Request) {
 	var address AddressToKYT
 	err := json.NewDecoder(r.Body).Decode(&address)
-	// numToSquare := req.URL.Query().Get("numToSquare")
 	if err != nil {
-		// Handle error
+		agg.logger.Error("Decoding request body has failed", "err", err)
 	}
 	if address.Address != "" {
 		err := agg.sendNewTaskKYT(&address.Address)
 		if err != nil {
-			// we log the errors inside sendNewTask() so here we just continue to the next task
+			agg.logger.Error("Aggregator failed to send address to kyt", "err", err)
 		}
 	}
 }
@@ -220,10 +219,9 @@ func (agg *Aggregator) handleSendFromKRNLKYT(w http.ResponseWriter, r *http.Requ
 // with the information of operators opted into quorum 0 at the block of task creation.
 func (agg *Aggregator) sendNewTaskKYT(address *string) error {
 	agg.logger.Info("Aggregator sending new task", "address", address)
-	// Send number to square to the task manager contract
+	// Send address to kyt to the task manager contract
 	newTask, taskIndex, err := agg.avsWriter.SendNewTaskKYT(context.Background(), common.HexToAddress(*address), types.QUORUM_THRESHOLD_NUMERATOR, types.QUORUM_NUMBERS)
 	if err != nil {
-		agg.logger.Error("Aggregator failed to send address to kyt", "err", err)
 		return err
 	}
 

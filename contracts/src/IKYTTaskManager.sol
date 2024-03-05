@@ -29,7 +29,7 @@ interface IKYTTaskManager {
         address addressToKYT;
         uint32 taskCreatedBlock;
         // task submitter decides on the criteria for a task to be completed
-        // note that this does not mean the task was "correctly" answered (i.e. the number was squared correctly)
+        // note that this does not mean the task was "correctly" answered (i.e. the kyt was done correctly)
         //      this is for the challenge logic to verify
         // task is completed (and contract will accept its TaskResponse) when each quorumNumbers specified here
         // are signed by at least quorumThresholdPercentage of the operators

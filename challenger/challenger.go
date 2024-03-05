@@ -10,6 +10,7 @@ import (
 	ethclient "github.com/Layr-Labs/eigensdk-go/chainio/clients/eth"
 	"github.com/Layr-Labs/eigensdk-go/logging"
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	//common will need to contain the abi of the contract
 	"github.com/martonmoro/el-kyt-avs/common"
 	"github.com/martonmoro/el-kyt-avs/core/config"
 
@@ -187,7 +188,7 @@ func (c *Challenger) getNonSigningOperatorPubKeys(vLog *cstaskmanager.ContractKY
 	}
 	calldata := tx.Data()
 	c.logger.Info("calldata", "calldata", calldata)
-	cstmAbi, err := abi.JSON(bytes.NewReader(common.IncredibleSquaringTaskManagerAbi))
+	cstmAbi, err := abi.JSON(bytes.NewReader(common.KYTTaskManagerAbi))
 	if err != nil {
 		c.logger.Error("Error getting Abi", "err", err)
 	}

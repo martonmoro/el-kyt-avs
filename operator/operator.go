@@ -32,18 +32,17 @@ import (
 	sdktypes "github.com/Layr-Labs/eigensdk-go/types"
 )
 
-const AVS_NAME = "incredible-squaring"
+const AVS_NAME = "kyt"
 const SEM_VER = "0.0.1"
 
+// Simulating having a verified KYT DB
 const (
 	address1 = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
 	address2 = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
 	address3 = "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC"
 	address4 = "0x90F79bf6EB2c4f870365E785982E1f101E93b906"
 )
-
 const kytAddressesSize = 4
-
 var kytAddresses = [kytAddressesSize]common.Address{common.HexToAddress(address1), common.HexToAddress(address2), common.HexToAddress(address3), common.HexToAddress(address4)}
 
 type Operator struct {
@@ -322,7 +321,7 @@ func (o *Operator) ProcessNewTaskCreatedLog(newTaskCreatedLog *cstaskmanager.Con
 		"quorumNumbers", newTaskCreatedLog.Task.QuorumNumbers,
 		"QuorumThresholdPercentage", newTaskCreatedLog.Task.QuorumThresholdPercentage,
 	)
-	// TODO: implement KYT
+
 	addressToKYT := newTaskCreatedLog.Task.AddressToKYT
 	isKYTPass := false
 	for _, addr := range kytAddresses {

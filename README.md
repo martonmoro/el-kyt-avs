@@ -1,15 +1,26 @@
-# EigenLayer KYT AVS
+# KRNL EigenLayer KYT AVS
 
 Basic repo demoing a simple AVS middleware with full eigenlayer integration.
 
 ## Dependencies
 
 You will need [foundry](https://book.getfoundry.sh/getting-started/installation) and [zap-pretty](https://github.com/maoueh/zap-pretty) to run.
-```
+```bash
 curl -L https://foundry.paradigm.xyz | bash
 foundryup
 go install github.com/maoueh/zap-pretty@latest
 ```
+Alternatively you can install zap-pretty with Homebrew running:
+```bash
+brew install maoueh/tap/zap-pretty
+``` 
+
+You will also need to install the submodules (eigenlayer-middleware and forge-std). 
+```bash
+git submodule update --init --recursive
+```
+
+Go version can also cause an issue so make sure you have 1.21 or higher.
 
 ## Running via make
 
@@ -68,9 +79,10 @@ The architecture of the AVS contains:
 
 4. [Aggregator] The aggregator collects the signatures from the operators and aggregates them using BLS aggregation. If any response passes the [quorumThresholdPercentage](contracts/src/IKYTTaskManager.sol#L38) set by the task generator when posting the task, the aggregator posts the aggregated response to the Task contract.
 
-5. If a response was sent within the [response window](contracts/src/KYTTaskManager.sol#L125), we enter the [Dispute resolution] period.
+5. (Currently challenge functionalities are not implemented fully but we leave this part in to give a full picture about the AVS flow) 
+   If a response was sent within the [response window](contracts/src/KYTTaskManager.sol#L125), we enter the [Dispute resolution] period.
    - [Off-chain] A challenge window is launched during which anyone can [raise a dispute](contracts/src/KYTTaskManager.sol#L185) in a DisputeResolution contract (in our case, this is the same as the TaskManager contract)
-   - [On-chain] The DisputeResolution contract resolves that a particular operator’s response is not the correct response (that is, not the square of the integer specified in the task) or the opted-in operator didn’t respond during the response window. If the dispute is resolved, the operator will be frozen in the Registration contract and the veto committee will decide whether to veto the freezing request or not.
+   - [On-chain] The DisputeResolution contract resolves that a particular operator’s response is not the correct response or the opted-in operator didn’t respond during the response window. If the dispute is resolved, the operator will be frozen in the Registration contract and the veto committee will decide whether to veto the freezing request or not.
 
 ## Avs node spec compliance
 

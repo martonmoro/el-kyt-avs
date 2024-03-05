@@ -43,7 +43,6 @@ contract KYTTaskManager is
 
     mapping(uint32 => bool) public taskSuccesfullyChallenged;
 
-    //TODO: change to address
     mapping(address => bool) kytResults;
 
     address public aggregator;
