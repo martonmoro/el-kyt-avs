@@ -10,6 +10,9 @@ import (
 	"testing"
 	"time"
 
+	"bytes"
+	"net/http"
+
 	"github.com/Layr-Labs/eigensdk-go/chainio/clients"
 	"github.com/Layr-Labs/eigensdk-go/chainio/clients/eth"
 	"github.com/Layr-Labs/eigensdk-go/chainio/txmgr"
@@ -152,8 +155,24 @@ func TestIntegration(t *testing.T) {
 		t.Fatalf("Failed to create aggregator: %s", err.Error())
 	}
 	go agg.Start(ctx)
-	log.Println("Started aggregator. Sleeping 20 seconds to give operator time to answer task 1...")
-	time.Sleep(20 * time.Second)
+
+	// Sending http task requests to task generator (same as aggregator in our case)
+	url := "http://localhost:8081/send-task-KYT"
+    jsonStr := []byte(`{"address":"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"}`)
+    req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+    req.Header.Set("Content-Type", "application/json")
+
+    client := &http.Client{}
+    _, err = client.Do(req)
+    if err != nil {
+        panic(err)
+    }
+	_, err = client.Do(req)
+    if err != nil {
+        panic(err)
+    }
+	log.Println("Started aggregator. Sleeping 10 seconds to give operator time to answer task 1...")
+	time.Sleep(10 * time.Second)
 
 	// get avsRegistry client to interact with the chain
 	avsReader, err := chainio.BuildAvsReaderFromConfig(config)
