@@ -20,16 +20,19 @@ ___CONTRACTS___: ##
 deploy-eigenlayer-contracts-to-anvil-and-save-state: ## Deploy eigenlayer
 	./tests/anvil/deploy-eigenlayer-save-anvil-state.sh
 
-deploy-incredible-squaring-contracts-to-anvil-and-save-state: ## Deploy avs
+deploy-kyt-contracts-to-anvil-and-save-state: ## Deploy avs
 	./tests/anvil/deploy-avs-save-anvil-state.sh
 
-deploy-all-to-anvil-and-save-state: deploy-eigenlayer-contracts-to-anvil-and-save-state deploy-incredible-squaring-contracts-to-anvil-and-save-state ## deploy eigenlayer, shared avs contracts, and inc-sq contracts 
+deploy-all-to-anvil-and-save-state: deploy-eigenlayer-contracts-to-anvil-and-save-state deploy-kyt-contracts-to-anvil-and-save-state ## deploy eigenlayer, shared avs contracts, and inc-sq contracts 
 
 start-anvil-chain-with-el-and-avs-deployed: ## starts anvil from a saved state file (with el and avs contracts deployed)
 	./tests/anvil/start-anvil-chain-with-el-and-avs-deployed.sh
 
 bindings: ## generates contract bindings
 	cd contracts && ./generate-go-bindings.sh
+
+bindings-avs: ## generates contract bindings for avs
+	cd contracts && ./generate-go-bindings-avs.sh
 
 ___DOCKER___: ## 
 docker-build-and-publish-images: ## builds and publishes operator and aggregator docker images using Ko
@@ -66,7 +69,7 @@ send-fund: ## sends fund to the operator saved in tests/keys/test.ecdsa.key.json
 ____OFFCHAIN_SOFTWARE___: ## 
 start-aggregator: ## 
 	go run aggregator/cmd/main.go --config config-files/aggregator.yaml \
-		--credible-squaring-deployment ${DEPLOYMENT_FILES_DIR}/credible_squaring_avs_deployment_output.json \
+		--kyt-deployment ${DEPLOYMENT_FILES_DIR}/kyt_avs_deployment_output.json \
 		--ecdsa-private-key ${AGGREGATOR_ECDSA_PRIV_KEY} \
 		2>&1 | zap-pretty
 

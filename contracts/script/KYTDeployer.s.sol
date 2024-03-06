@@ -17,9 +17,9 @@ import {IndexRegistry} from "@eigenlayer-middleware/src/IndexRegistry.sol";
 import {StakeRegistry} from "@eigenlayer-middleware/src/StakeRegistry.sol";
 import "@eigenlayer-middleware/src/OperatorStateRetriever.sol";
 
-import {IncredibleSquaringServiceManager, IServiceManager} from "../src/IncredibleSquaringServiceManager.sol";
-import {IncredibleSquaringTaskManager} from "../src/IncredibleSquaringTaskManager.sol";
-import {IIncredibleSquaringTaskManager} from "../src/IIncredibleSquaringTaskManager.sol";
+import {KYTServiceManager, IServiceManager} from "../src/KYTServiceManager.sol";
+import {KYTTaskManager} from "../src/KYTTaskManager.sol";
+import {IKYTTaskManager} from "../src/IKYTTaskManager.sol";
 import "../src/ERC20Mock.sol";
 
 import {Utils} from "./utils/Utils.sol";
@@ -30,8 +30,8 @@ import "forge-std/StdJson.sol";
 import "forge-std/console.sol";
 
 // # To deploy and verify our contract
-// forge script script/CredibleSquaringDeployer.s.sol:CredibleSquaringDeployer --rpc-url $RPC_URL  --private-key $PRIVATE_KEY --broadcast -vvvv
-contract IncredibleSquaringDeployer is Script, Utils {
+// forge script script/KYTDeployer.s.sol:KYTDeployer --rpc-url $RPC_URL  --private-key $PRIVATE_KEY --broadcast -vvvv
+contract KYTDeployer is Script, Utils {
     // DEPLOYMENT CONSTANTS
     uint256 public constant QUORUM_THRESHOLD_PERCENTAGE = 100;
     uint32 public constant TASK_RESPONSE_WINDOW_BLOCK = 30;
@@ -48,8 +48,8 @@ contract IncredibleSquaringDeployer is Script, Utils {
     StrategyBaseTVLLimits public erc20MockStrategy;
 
     // Credible Squaring contracts
-    ProxyAdmin public incredibleSquaringProxyAdmin;
-    PauserRegistry public incredibleSquaringPauserReg;
+    ProxyAdmin public KYTProxyAdmin;
+    PauserRegistry public KYTPauserReg;
 
     regcoord.RegistryCoordinator public registryCoordinator;
     regcoord.IRegistryCoordinator public registryCoordinatorImplementation;
@@ -65,12 +65,12 @@ contract IncredibleSquaringDeployer is Script, Utils {
 
     OperatorStateRetriever public operatorStateRetriever;
 
-    IncredibleSquaringServiceManager public incredibleSquaringServiceManager;
-    IServiceManager public incredibleSquaringServiceManagerImplementation;
+    KYTServiceManager public kytServiceManager;
+    IServiceManager public KYTServiceManagerImplementation;
 
-    IncredibleSquaringTaskManager public incredibleSquaringTaskManager;
-    IIncredibleSquaringTaskManager
-        public incredibleSquaringTaskManagerImplementation;
+    KYTTaskManager public kytTaskManager;
+    IKYTTaskManager
+        public KYTTaskManagerImplementation;
 
     function run() external {
         // Eigenlayer contracts
@@ -108,8 +108,8 @@ contract IncredibleSquaringDeployer is Script, Utils {
                 )
             );
 
-        address credibleSquaringCommunityMultisig = msg.sender;
-        address credibleSquaringPauser = msg.sender;
+        address kytCommunityMultisig = msg.sender;
+        address kytPauser = msg.sender;
 
         vm.startBroadcast();
         _deployErc20AndStrategyAndWhitelistStrategy(
@@ -121,8 +121,8 @@ contract IncredibleSquaringDeployer is Script, Utils {
         _deployCredibleSquaringContracts(
             delegationManager,
             erc20MockStrategy,
-            credibleSquaringCommunityMultisig,
-            credibleSquaringPauser
+            kytCommunityMultisig,
+            kytPauser
         );
         vm.stopBroadcast();
     }
@@ -159,8 +159,8 @@ contract IncredibleSquaringDeployer is Script, Utils {
     function _deployCredibleSquaringContracts(
         IDelegationManager delegationManager,
         IStrategy strat,
-        address incredibleSquaringCommunityMultisig,
-        address credibleSquaringPauser
+        address KYTCommunityMultisig,
+        address kytPauser
     ) internal {
         // Adding this as a temporary fix to make the rest of the script work with a single strategy
         // since it was originally written to work with an array of strategies
@@ -168,16 +168,16 @@ contract IncredibleSquaringDeployer is Script, Utils {
         uint numStrategies = deployedStrategyArray.length;
 
         // deploy proxy admin for ability to upgrade proxy contracts
-        incredibleSquaringProxyAdmin = new ProxyAdmin();
+        KYTProxyAdmin = new ProxyAdmin();
 
         // deploy pauser registry
         {
             address[] memory pausers = new address[](2);
-            pausers[0] = credibleSquaringPauser;
-            pausers[1] = incredibleSquaringCommunityMultisig;
-            incredibleSquaringPauserReg = new PauserRegistry(
+            pausers[0] = kytPauser;
+            pausers[1] = KYTCommunityMultisig;
+            KYTPauserReg = new PauserRegistry(
                 pausers,
-                incredibleSquaringCommunityMultisig
+                KYTCommunityMultisig
             );
         }
 
@@ -189,20 +189,20 @@ contract IncredibleSquaringDeployer is Script, Utils {
          * First, deploy upgradeable proxy contracts that **will point** to the implementations. Since the implementation contracts are
          * not yet deployed, we give these proxies an empty contract as the initial implementation, to act as if they have no code.
          */
-        incredibleSquaringServiceManager = IncredibleSquaringServiceManager(
+        kytServiceManager = KYTServiceManager(
             address(
                 new TransparentUpgradeableProxy(
                     address(emptyContract),
-                    address(incredibleSquaringProxyAdmin),
+                    address(KYTProxyAdmin),
                     ""
                 )
             )
         );
-        incredibleSquaringTaskManager = IncredibleSquaringTaskManager(
+        kytTaskManager = KYTTaskManager(
             address(
                 new TransparentUpgradeableProxy(
                     address(emptyContract),
-                    address(incredibleSquaringProxyAdmin),
+                    address(KYTProxyAdmin),
                     ""
                 )
             )
@@ -211,7 +211,7 @@ contract IncredibleSquaringDeployer is Script, Utils {
             address(
                 new TransparentUpgradeableProxy(
                     address(emptyContract),
-                    address(incredibleSquaringProxyAdmin),
+                    address(KYTProxyAdmin),
                     ""
                 )
             )
@@ -220,7 +220,7 @@ contract IncredibleSquaringDeployer is Script, Utils {
             address(
                 new TransparentUpgradeableProxy(
                     address(emptyContract),
-                    address(incredibleSquaringProxyAdmin),
+                    address(KYTProxyAdmin),
                     ""
                 )
             )
@@ -229,7 +229,7 @@ contract IncredibleSquaringDeployer is Script, Utils {
             address(
                 new TransparentUpgradeableProxy(
                     address(emptyContract),
-                    address(incredibleSquaringProxyAdmin),
+                    address(KYTProxyAdmin),
                     ""
                 )
             )
@@ -238,7 +238,7 @@ contract IncredibleSquaringDeployer is Script, Utils {
             address(
                 new TransparentUpgradeableProxy(
                     address(emptyContract),
-                    address(incredibleSquaringProxyAdmin),
+                    address(KYTProxyAdmin),
                     ""
                 )
             )
@@ -253,7 +253,7 @@ contract IncredibleSquaringDeployer is Script, Utils {
                 delegationManager
             );
 
-            incredibleSquaringProxyAdmin.upgrade(
+            KYTProxyAdmin.upgrade(
                 TransparentUpgradeableProxy(payable(address(stakeRegistry))),
                 address(stakeRegistryImplementation)
             );
@@ -262,7 +262,7 @@ contract IncredibleSquaringDeployer is Script, Utils {
                 registryCoordinator
             );
 
-            incredibleSquaringProxyAdmin.upgrade(
+            KYTProxyAdmin.upgrade(
                 TransparentUpgradeableProxy(payable(address(blsApkRegistry))),
                 address(blsApkRegistryImplementation)
             );
@@ -271,14 +271,14 @@ contract IncredibleSquaringDeployer is Script, Utils {
                 registryCoordinator
             );
 
-            incredibleSquaringProxyAdmin.upgrade(
+            KYTProxyAdmin.upgrade(
                 TransparentUpgradeableProxy(payable(address(indexRegistry))),
                 address(indexRegistryImplementation)
             );
         }
 
         registryCoordinatorImplementation = new regcoord.RegistryCoordinator(
-            incredibleSquaringServiceManager,
+            kytServiceManager,
             regcoord.IStakeRegistry(address(stakeRegistry)),
             regcoord.IBLSApkRegistry(address(blsApkRegistry)),
             regcoord.IIndexRegistry(address(indexRegistry))
@@ -324,7 +324,7 @@ contract IncredibleSquaringDeployer is Script, Utils {
                         });
                 }
             }
-            incredibleSquaringProxyAdmin.upgradeAndCall(
+            KYTProxyAdmin.upgradeAndCall(
                 TransparentUpgradeableProxy(
                     payable(address(registryCoordinator))
                 ),
@@ -332,10 +332,10 @@ contract IncredibleSquaringDeployer is Script, Utils {
                 abi.encodeWithSelector(
                     regcoord.RegistryCoordinator.initialize.selector,
                     // we set churnApprover and ejector to communityMultisig because we don't need them
-                    incredibleSquaringCommunityMultisig,
-                    incredibleSquaringCommunityMultisig,
-                    incredibleSquaringCommunityMultisig,
-                    incredibleSquaringPauserReg,
+                    KYTCommunityMultisig,
+                    KYTCommunityMultisig,
+                    KYTCommunityMultisig,
+                    KYTPauserReg,
                     0, // 0 initialPausedStatus means everything unpaused
                     quorumsOperatorSetParams,
                     quorumsMinimumStake,
@@ -344,39 +344,39 @@ contract IncredibleSquaringDeployer is Script, Utils {
             );
         }
 
-        incredibleSquaringServiceManagerImplementation = new IncredibleSquaringServiceManager(
+        KYTServiceManagerImplementation = new KYTServiceManager(
             delegationManager,
             registryCoordinator,
             stakeRegistry,
-            incredibleSquaringTaskManager
+            kytTaskManager
         );
         // Third, upgrade the proxy contracts to use the correct implementation contracts and initialize them.
-        incredibleSquaringProxyAdmin.upgradeAndCall(
+        KYTProxyAdmin.upgradeAndCall(
             TransparentUpgradeableProxy(
-                payable(address(incredibleSquaringServiceManager))
+                payable(address(kytServiceManager))
             ),
-            address(incredibleSquaringServiceManagerImplementation),
+            address(KYTServiceManagerImplementation),
             abi.encodeWithSelector(
-                incredibleSquaringServiceManager.initialize.selector,
-                incredibleSquaringCommunityMultisig
+                kytServiceManager.initialize.selector,
+                KYTCommunityMultisig
             )
         );
 
-        incredibleSquaringTaskManagerImplementation = new IncredibleSquaringTaskManager(
+        KYTTaskManagerImplementation = new KYTTaskManager(
             registryCoordinator,
             TASK_RESPONSE_WINDOW_BLOCK
         );
 
         // Third, upgrade the proxy contracts to use the correct implementation contracts and initialize them.
-        incredibleSquaringProxyAdmin.upgradeAndCall(
+        KYTProxyAdmin.upgradeAndCall(
             TransparentUpgradeableProxy(
-                payable(address(incredibleSquaringTaskManager))
+                payable(address(kytTaskManager))
             ),
-            address(incredibleSquaringTaskManagerImplementation),
+            address(KYTTaskManagerImplementation),
             abi.encodeWithSelector(
-                incredibleSquaringTaskManager.initialize.selector,
-                incredibleSquaringPauserReg,
-                incredibleSquaringCommunityMultisig,
+                KYTTaskManager.initialize.selector,
+                KYTPauserReg,
+                KYTCommunityMultisig,
                 AGGREGATOR_ADDR,
                 TASK_GENERATOR_ADDR
             )
@@ -398,23 +398,23 @@ contract IncredibleSquaringDeployer is Script, Utils {
         );
         vm.serializeAddress(
             deployed_addresses,
-            "credibleSquaringServiceManager",
-            address(incredibleSquaringServiceManager)
+            "kytServiceManager",
+            address(kytServiceManager)
         );
         vm.serializeAddress(
             deployed_addresses,
-            "credibleSquaringServiceManagerImplementation",
-            address(incredibleSquaringServiceManagerImplementation)
+            "kytServiceManagerImplementation",
+            address(KYTServiceManagerImplementation)
         );
         vm.serializeAddress(
             deployed_addresses,
-            "credibleSquaringTaskManager",
-            address(incredibleSquaringTaskManager)
+            "kytTaskManager",
+            address(kytTaskManager)
         );
         vm.serializeAddress(
             deployed_addresses,
-            "credibleSquaringTaskManagerImplementation",
-            address(incredibleSquaringTaskManagerImplementation)
+            "kytTaskManagerImplementation",
+            address(KYTTaskManagerImplementation)
         );
         vm.serializeAddress(
             deployed_addresses,
@@ -439,6 +439,6 @@ contract IncredibleSquaringDeployer is Script, Utils {
             deployed_addresses_output
         );
 
-        writeOutput(finalJson, "credible_squaring_avs_deployment_output");
+        writeOutput(finalJson, "kyt_avs_deployment_output");
     }
 }

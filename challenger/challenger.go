@@ -5,16 +5,30 @@ import (
 	"context"
 	"math/big"
 
+	gethcommon "github.com/ethereum/go-ethereum/common"
+
 	ethclient "github.com/Layr-Labs/eigensdk-go/chainio/clients/eth"
 	"github.com/Layr-Labs/eigensdk-go/logging"
-	"github.com/Layr-Labs/incredible-squaring-avs/common"
-	"github.com/Layr-Labs/incredible-squaring-avs/core/config"
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	//common will need to contain the abi of the contract
+	"github.com/martonmoro/el-kyt-avs/common"
+	"github.com/martonmoro/el-kyt-avs/core/config"
 
-	"github.com/Layr-Labs/incredible-squaring-avs/challenger/types"
-	cstaskmanager "github.com/Layr-Labs/incredible-squaring-avs/contracts/bindings/IncredibleSquaringTaskManager"
-	"github.com/Layr-Labs/incredible-squaring-avs/core/chainio"
+	"github.com/martonmoro/el-kyt-avs/challenger/types"
+	cstaskmanager "github.com/martonmoro/el-kyt-avs/contracts/bindings/KYTTaskManager"
+	"github.com/martonmoro/el-kyt-avs/core/chainio"
 )
+
+const (
+	address1 = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+	address2 = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
+	address3 = "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC"
+	address4 = "0x90F79bf6EB2c4f870365E785982E1f101E93b906"
+)
+
+const kytAddressesSize = 4
+
+var kytAddresses = [kytAddressesSize]gethcommon.Address{gethcommon.HexToAddress(address1), gethcommon.HexToAddress(address2), gethcommon.HexToAddress(address3), gethcommon.HexToAddress(address4)}
 
 type Challenger struct {
 	logger             logging.Logger
@@ -22,10 +36,10 @@ type Challenger struct {
 	avsReader          chainio.AvsReaderer
 	avsWriter          chainio.AvsWriterer
 	avsSubscriber      chainio.AvsSubscriberer
-	tasks              map[uint32]cstaskmanager.IIncredibleSquaringTaskManagerTask
+	tasks              map[uint32]cstaskmanager.IKYTTaskManagerTask
 	taskResponses      map[uint32]types.TaskResponseData
-	taskResponseChan   chan *cstaskmanager.ContractIncredibleSquaringTaskManagerTaskResponded
-	newTaskCreatedChan chan *cstaskmanager.ContractIncredibleSquaringTaskManagerNewTaskCreated
+	taskResponseChan   chan *cstaskmanager.ContractKYTTaskManagerTaskResponded
+	newTaskCreatedChan chan *cstaskmanager.ContractKYTTaskManagerNewTaskCreated
 }
 
 func NewChallenger(c *config.Config) (*Challenger, error) {
@@ -52,10 +66,10 @@ func NewChallenger(c *config.Config) (*Challenger, error) {
 		avsWriter:          avsWriter,
 		avsReader:          avsReader,
 		avsSubscriber:      avsSubscriber,
-		tasks:              make(map[uint32]cstaskmanager.IIncredibleSquaringTaskManagerTask),
+		tasks:              make(map[uint32]cstaskmanager.IKYTTaskManagerTask),
 		taskResponses:      make(map[uint32]types.TaskResponseData),
-		taskResponseChan:   make(chan *cstaskmanager.ContractIncredibleSquaringTaskManagerTaskResponded),
-		newTaskCreatedChan: make(chan *cstaskmanager.ContractIncredibleSquaringTaskManagerNewTaskCreated),
+		taskResponseChan:   make(chan *cstaskmanager.ContractKYTTaskManagerTaskResponded),
+		newTaskCreatedChan: make(chan *cstaskmanager.ContractKYTTaskManagerNewTaskCreated),
 	}
 
 	return challenger, nil
@@ -112,12 +126,12 @@ func (c *Challenger) Start(ctx context.Context) error {
 
 }
 
-func (c *Challenger) processNewTaskCreatedLog(newTaskCreatedLog *cstaskmanager.ContractIncredibleSquaringTaskManagerNewTaskCreated) uint32 {
+func (c *Challenger) processNewTaskCreatedLog(newTaskCreatedLog *cstaskmanager.ContractKYTTaskManagerNewTaskCreated) uint32 {
 	c.tasks[newTaskCreatedLog.TaskIndex] = newTaskCreatedLog.Task
 	return newTaskCreatedLog.TaskIndex
 }
 
-func (c *Challenger) processTaskResponseLog(taskResponseLog *cstaskmanager.ContractIncredibleSquaringTaskManagerTaskResponded) uint32 {
+func (c *Challenger) processTaskResponseLog(taskResponseLog *cstaskmanager.ContractKYTTaskManagerTaskResponded) uint32 {
 	taskResponseRawLog, err := c.avsSubscriber.ParseTaskResponded(taskResponseLog.Raw)
 	if err != nil {
 		c.logger.Error("Error parsing task response. skipping task (this is probably bad and should be investigated)", "err", err)
@@ -136,13 +150,19 @@ func (c *Challenger) processTaskResponseLog(taskResponseLog *cstaskmanager.Contr
 }
 
 func (c *Challenger) callChallengeModule(taskIndex uint32) error {
-	numberToBeSquared := c.tasks[taskIndex].NumberToBeSquared
-	answerInResponse := c.taskResponses[taskIndex].TaskResponse.NumberSquared
-	trueAnswer := numberToBeSquared.Exp(numberToBeSquared, big.NewInt(2), nil)
+	addressToBeKYTd := c.tasks[taskIndex].AddressToKYT
+	answerInResponse := c.taskResponses[taskIndex].TaskResponse.KYTResult
+	trueAnswer := false
+	for _, addr := range kytAddresses {
+		if addr == addressToBeKYTd {
+			trueAnswer = true
+			break
+		}
+	}
 
 	// checking if the answer in the response submitted by aggregator is correct
-	if trueAnswer.Cmp(answerInResponse) != 0 {
-		c.logger.Infof("The number squared is not correct")
+	if trueAnswer == answerInResponse {
+		c.logger.Infof("The kyt is not correct")
 
 		// raise challenge
 		c.raiseChallenge(taskIndex)
@@ -152,7 +172,7 @@ func (c *Challenger) callChallengeModule(taskIndex uint32) error {
 	return types.NoErrorInTaskResponse
 }
 
-func (c *Challenger) getNonSigningOperatorPubKeys(vLog *cstaskmanager.ContractIncredibleSquaringTaskManagerTaskResponded) []cstaskmanager.BN254G1Point {
+func (c *Challenger) getNonSigningOperatorPubKeys(vLog *cstaskmanager.ContractKYTTaskManagerTaskResponded) []cstaskmanager.BN254G1Point {
 	c.logger.Info("vLog.Raw is", "vLog.Raw", vLog.Raw)
 
 	// get the nonSignerStakesAndSignature
@@ -168,7 +188,7 @@ func (c *Challenger) getNonSigningOperatorPubKeys(vLog *cstaskmanager.ContractIn
 	}
 	calldata := tx.Data()
 	c.logger.Info("calldata", "calldata", calldata)
-	cstmAbi, err := abi.JSON(bytes.NewReader(common.IncredibleSquaringTaskManagerAbi))
+	cstmAbi, err := abi.JSON(bytes.NewReader(common.KYTTaskManagerAbi))
 	if err != nil {
 		c.logger.Error("Error getting Abi", "err", err)
 	}

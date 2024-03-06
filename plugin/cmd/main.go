@@ -17,10 +17,10 @@ import (
 	"github.com/Layr-Labs/eigensdk-go/logging"
 	"github.com/Layr-Labs/eigensdk-go/signerv2"
 	"github.com/Layr-Labs/eigensdk-go/utils"
-	"github.com/Layr-Labs/incredible-squaring-avs/core/chainio"
-	"github.com/Layr-Labs/incredible-squaring-avs/types"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/martonmoro/el-kyt-avs/core/chainio"
+	"github.com/martonmoro/el-kyt-avs/types"
 	"github.com/urfave/cli"
 )
 
@@ -67,8 +67,8 @@ func main() {
 		OperationFlag,
 		StrategyAddrFlag,
 	}
-	app.Name = "credible-squaring-plugin"
-	app.Usage = "Credible Squaring Plugin"
+	app.Name = "kyt-plugin"
+	app.Usage = "KYT Plugin"
 	app.Description = "This is used to run one time operations like avs opt-in/opt-out"
 	app.Action = plugin
 	err := app.Run(os.Args)
@@ -98,7 +98,7 @@ func plugin(ctx *cli.Context) {
 		EthWsUrl:                   avsConfig.EthWsUrl,
 		RegistryCoordinatorAddr:    avsConfig.AVSRegistryCoordinatorAddress,
 		OperatorStateRetrieverAddr: avsConfig.OperatorStateRetrieverAddress,
-		AvsName:                    "incredible-squaring",
+		AvsName:                    "kyt",
 		PromMetricsIpPortAddress:   avsConfig.EigenMetricsIpPortAddress,
 	}
 	logger, _ := logging.NewZapLogger(logging.Development)

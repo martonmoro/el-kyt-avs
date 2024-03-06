@@ -2,8 +2,8 @@ package chainio
 
 import (
 	"context"
-	"math/big"
 
+	"github.com/ethereum/go-ethereum/common"
 	gethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 
@@ -12,29 +12,29 @@ import (
 	"github.com/Layr-Labs/eigensdk-go/chainio/txmgr"
 	logging "github.com/Layr-Labs/eigensdk-go/logging"
 
-	cstaskmanager "github.com/Layr-Labs/incredible-squaring-avs/contracts/bindings/IncredibleSquaringTaskManager"
-	"github.com/Layr-Labs/incredible-squaring-avs/core/config"
+	cstaskmanager "github.com/martonmoro/el-kyt-avs/contracts/bindings/KYTTaskManager"
+	"github.com/martonmoro/el-kyt-avs/core/config"
 )
 
 type AvsWriterer interface {
 	avsregistry.AvsRegistryWriter
 
-	SendNewTaskNumberToSquare(
+	SendNewTaskKYT(
 		ctx context.Context,
-		numToSquare *big.Int,
+		address common.Address,
 		quorumThresholdPercentage uint32,
 		quorumNumbers []byte,
-	) (cstaskmanager.IIncredibleSquaringTaskManagerTask, uint32, error)
+	) (cstaskmanager.IKYTTaskManagerTask, uint32, error)
 	RaiseChallenge(
 		ctx context.Context,
-		task cstaskmanager.IIncredibleSquaringTaskManagerTask,
-		taskResponse cstaskmanager.IIncredibleSquaringTaskManagerTaskResponse,
-		taskResponseMetadata cstaskmanager.IIncredibleSquaringTaskManagerTaskResponseMetadata,
+		task cstaskmanager.IKYTTaskManagerTask,
+		taskResponse cstaskmanager.IKYTTaskManagerTaskResponse,
+		taskResponseMetadata cstaskmanager.IKYTTaskManagerTaskResponseMetadata,
 		pubkeysOfNonSigningOperators []cstaskmanager.BN254G1Point,
 	) (*types.Receipt, error)
 	SendAggregatedResponse(ctx context.Context,
-		task cstaskmanager.IIncredibleSquaringTaskManagerTask,
-		taskResponse cstaskmanager.IIncredibleSquaringTaskManagerTaskResponse,
+		task cstaskmanager.IKYTTaskManagerTask,
+		taskResponse cstaskmanager.IKYTTaskManagerTaskResponse,
 		nonSignerStakesAndSignature cstaskmanager.IBLSSignatureCheckerNonSignerStakesAndSignature,
 	) (*types.Receipt, error)
 }
@@ -50,7 +50,7 @@ type AvsWriter struct {
 var _ AvsWriterer = (*AvsWriter)(nil)
 
 func BuildAvsWriterFromConfig(c *config.Config) (*AvsWriter, error) {
-	return BuildAvsWriter(c.TxMgr, c.IncredibleSquaringRegistryCoordinatorAddr, c.OperatorStateRetrieverAddr, c.EthHttpClient, c.Logger)
+	return BuildAvsWriter(c.TxMgr, c.KYTRegistryCoordinatorAddr, c.OperatorStateRetrieverAddr, c.EthHttpClient, c.Logger)
 }
 
 func BuildAvsWriter(txMgr txmgr.TxManager, registryCoordinatorAddr, operatorStateRetrieverAddr gethcommon.Address, ethHttpClient eth.EthClient, logger logging.Logger) (*AvsWriter, error) {
@@ -75,33 +75,33 @@ func NewAvsWriter(avsRegistryWriter avsregistry.AvsRegistryWriter, avsServiceBin
 }
 
 // returns the tx receipt, as well as the task index (which it gets from parsing the tx receipt logs)
-func (w *AvsWriter) SendNewTaskNumberToSquare(ctx context.Context, numToSquare *big.Int, quorumThresholdPercentage uint32, quorumNumbers []byte) (cstaskmanager.IIncredibleSquaringTaskManagerTask, uint32, error) {
+func (w *AvsWriter) SendNewTaskKYT(ctx context.Context, address common.Address, quorumThresholdPercentage uint32, quorumNumbers []byte) (cstaskmanager.IKYTTaskManagerTask, uint32, error) {
 	txOpts, err := w.TxMgr.GetNoSendTxOpts()
 	if err != nil {
 		w.logger.Errorf("Error getting tx opts")
-		return cstaskmanager.IIncredibleSquaringTaskManagerTask{}, 0, err
+		return cstaskmanager.IKYTTaskManagerTask{}, 0, err
 	}
-	tx, err := w.AvsContractBindings.TaskManager.CreateNewTask(txOpts, numToSquare, quorumThresholdPercentage, quorumNumbers)
+	tx, err := w.AvsContractBindings.TaskManager.CreateNewTask(txOpts, address, quorumThresholdPercentage, quorumNumbers)
 	if err != nil {
 		w.logger.Errorf("Error assembling CreateNewTask tx")
-		return cstaskmanager.IIncredibleSquaringTaskManagerTask{}, 0, err
+		return cstaskmanager.IKYTTaskManagerTask{}, 0, err
 	}
 	receipt, err := w.TxMgr.Send(ctx, tx)
 	if err != nil {
 		w.logger.Errorf("Error submitting CreateNewTask tx")
-		return cstaskmanager.IIncredibleSquaringTaskManagerTask{}, 0, err
+		return cstaskmanager.IKYTTaskManagerTask{}, 0, err
 	}
-	newTaskCreatedEvent, err := w.AvsContractBindings.TaskManager.ContractIncredibleSquaringTaskManagerFilterer.ParseNewTaskCreated(*receipt.Logs[0])
+	newTaskCreatedEvent, err := w.AvsContractBindings.TaskManager.ContractKYTTaskManagerFilterer.ParseNewTaskCreated(*receipt.Logs[0])
 	if err != nil {
 		w.logger.Error("Aggregator failed to parse new task created event", "err", err)
-		return cstaskmanager.IIncredibleSquaringTaskManagerTask{}, 0, err
+		return cstaskmanager.IKYTTaskManagerTask{}, 0, err
 	}
 	return newTaskCreatedEvent.Task, newTaskCreatedEvent.TaskIndex, nil
 }
 
 func (w *AvsWriter) SendAggregatedResponse(
-	ctx context.Context, task cstaskmanager.IIncredibleSquaringTaskManagerTask,
-	taskResponse cstaskmanager.IIncredibleSquaringTaskManagerTaskResponse,
+	ctx context.Context, task cstaskmanager.IKYTTaskManagerTask,
+	taskResponse cstaskmanager.IKYTTaskManagerTaskResponse,
 	nonSignerStakesAndSignature cstaskmanager.IBLSSignatureCheckerNonSignerStakesAndSignature,
 ) (*types.Receipt, error) {
 	txOpts, err := w.TxMgr.GetNoSendTxOpts()
@@ -124,9 +124,9 @@ func (w *AvsWriter) SendAggregatedResponse(
 
 func (w *AvsWriter) RaiseChallenge(
 	ctx context.Context,
-	task cstaskmanager.IIncredibleSquaringTaskManagerTask,
-	taskResponse cstaskmanager.IIncredibleSquaringTaskManagerTaskResponse,
-	taskResponseMetadata cstaskmanager.IIncredibleSquaringTaskManagerTaskResponseMetadata,
+	task cstaskmanager.IKYTTaskManagerTask,
+	taskResponse cstaskmanager.IKYTTaskManagerTaskResponse,
+	taskResponseMetadata cstaskmanager.IKYTTaskManagerTaskResponseMetadata,
 	pubkeysOfNonSigningOperators []cstaskmanager.BN254G1Point,
 ) (*types.Receipt, error) {
 	txOpts, err := w.TxMgr.GetNoSendTxOpts()

@@ -10,20 +10,23 @@ import (
 	"testing"
 	"time"
 
+	"bytes"
+	"net/http"
+
 	"github.com/Layr-Labs/eigensdk-go/chainio/clients"
 	"github.com/Layr-Labs/eigensdk-go/chainio/clients/eth"
 	"github.com/Layr-Labs/eigensdk-go/chainio/txmgr"
 	sdklogging "github.com/Layr-Labs/eigensdk-go/logging"
 	"github.com/Layr-Labs/eigensdk-go/signerv2"
 	sdkutils "github.com/Layr-Labs/eigensdk-go/utils"
-	"github.com/Layr-Labs/incredible-squaring-avs/aggregator"
-	"github.com/Layr-Labs/incredible-squaring-avs/core/chainio"
-	"github.com/Layr-Labs/incredible-squaring-avs/core/config"
-	"github.com/Layr-Labs/incredible-squaring-avs/operator"
-	"github.com/Layr-Labs/incredible-squaring-avs/types"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/martonmoro/el-kyt-avs/aggregator"
+	"github.com/martonmoro/el-kyt-avs/core/chainio"
+	"github.com/martonmoro/el-kyt-avs/core/config"
+	"github.com/martonmoro/el-kyt-avs/operator"
+	"github.com/martonmoro/el-kyt-avs/types"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 )
@@ -51,9 +54,9 @@ func TestIntegration(t *testing.T) {
 	aggConfigRaw.EthRpcUrl = "http://" + anvilEndpoint
 	aggConfigRaw.EthWsUrl = "ws://" + anvilEndpoint
 
-	var credibleSquaringDeploymentRaw config.IncredibleSquaringDeploymentRaw
-	credibleSquaringDeploymentFilePath := "../../contracts/script/output/31337/credible_squaring_avs_deployment_output.json"
-	sdkutils.ReadJsonConfig(credibleSquaringDeploymentFilePath, &credibleSquaringDeploymentRaw)
+	var kytDeploymentRaw config.KYTDeploymentRaw
+	kytDeploymentFilePath := "../../contracts/script/output/31337/kyt_avs_deployment_output.json"
+	sdkutils.ReadJsonConfig(kytDeploymentFilePath, &kytDeploymentRaw)
 
 	logger, err := sdklogging.NewZapLogger(aggConfigRaw.Environment)
 	if err != nil {
@@ -99,12 +102,12 @@ func TestIntegration(t *testing.T) {
 		EthHttpClient:              ethRpcClient,
 		EthWsRpcUrl:                aggConfigRaw.EthWsUrl,
 		EthWsClient:                ethWsClient,
-		OperatorStateRetrieverAddr: common.HexToAddress(credibleSquaringDeploymentRaw.Addresses.OperatorStateRetrieverAddr),
-		IncredibleSquaringRegistryCoordinatorAddr: common.HexToAddress(credibleSquaringDeploymentRaw.Addresses.RegistryCoordinatorAddr),
-		AggregatorServerIpPortAddr:                aggConfigRaw.AggregatorServerIpPortAddr,
-		RegisterOperatorOnStartup:                 aggConfigRaw.RegisterOperatorOnStartup,
-		TxMgr:                                     txMgr,
-		AggregatorAddress:                         aggregatorAddr,
+		OperatorStateRetrieverAddr: common.HexToAddress(kytDeploymentRaw.Addresses.OperatorStateRetrieverAddr),
+		KYTRegistryCoordinatorAddr: common.HexToAddress(kytDeploymentRaw.Addresses.RegistryCoordinatorAddr),
+		AggregatorServerIpPortAddr: aggConfigRaw.AggregatorServerIpPortAddr,
+		RegisterOperatorOnStartup:  aggConfigRaw.RegisterOperatorOnStartup,
+		TxMgr:                      txMgr,
+		AggregatorAddress:          aggregatorAddr,
 	}
 
 	/* Prepare the config file for operator */
@@ -152,8 +155,24 @@ func TestIntegration(t *testing.T) {
 		t.Fatalf("Failed to create aggregator: %s", err.Error())
 	}
 	go agg.Start(ctx)
-	log.Println("Started aggregator. Sleeping 20 seconds to give operator time to answer task 1...")
-	time.Sleep(20 * time.Second)
+
+	// Sending http task requests to task generator (same as aggregator in our case)
+	url := "http://localhost:8081/send-task-KYT"
+    jsonStr := []byte(`{"address":"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"}`)
+    req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+    req.Header.Set("Content-Type", "application/json")
+
+    client := &http.Client{}
+    _, err = client.Do(req)
+    if err != nil {
+        panic(err)
+    }
+	_, err = client.Do(req)
+    if err != nil {
+        panic(err)
+    }
+	log.Println("Started aggregator. Sleeping 10 seconds to give operator time to answer task 1...")
+	time.Sleep(10 * time.Second)
 
 	// get avsRegistry client to interact with the chain
 	avsReader, err := chainio.BuildAvsReaderFromConfig(config)

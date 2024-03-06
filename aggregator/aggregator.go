@@ -2,11 +2,14 @@ package aggregator
 
 import (
 	"context"
-	"math/big"
+	"encoding/json"
 	"sync"
 	"time"
 
+	"net/http"
+
 	"github.com/Layr-Labs/eigensdk-go/logging"
+	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/Layr-Labs/eigensdk-go/chainio/clients"
 	sdkclients "github.com/Layr-Labs/eigensdk-go/chainio/clients"
@@ -14,12 +17,12 @@ import (
 	blsagg "github.com/Layr-Labs/eigensdk-go/services/bls_aggregation"
 	oppubkeysserv "github.com/Layr-Labs/eigensdk-go/services/operatorpubkeys"
 	sdktypes "github.com/Layr-Labs/eigensdk-go/types"
-	"github.com/Layr-Labs/incredible-squaring-avs/aggregator/types"
-	"github.com/Layr-Labs/incredible-squaring-avs/core"
-	"github.com/Layr-Labs/incredible-squaring-avs/core/chainio"
-	"github.com/Layr-Labs/incredible-squaring-avs/core/config"
+	"github.com/martonmoro/el-kyt-avs/aggregator/types"
+	"github.com/martonmoro/el-kyt-avs/core"
+	"github.com/martonmoro/el-kyt-avs/core/chainio"
+	"github.com/martonmoro/el-kyt-avs/core/config"
 
-	cstaskmanager "github.com/Layr-Labs/incredible-squaring-avs/contracts/bindings/IncredibleSquaringTaskManager"
+	cstaskmanager "github.com/martonmoro/el-kyt-avs/contracts/bindings/KYTTaskManager"
 )
 
 const (
@@ -28,10 +31,10 @@ const (
 	// ideally be fetched from the contracts
 	taskChallengeWindowBlock = 100
 	blockTimeSeconds         = 12 * time.Second
-	avsName                  = "incredible-squaring"
+	avsName                  = "kyt"
 )
 
-// Aggregator sends tasks (numbers to square) onchain, then listens for operator signed TaskResponses.
+// Aggregator sends tasks (address to kyt) onchain, then listens for operator signed TaskResponses.
 // It aggregates responses signatures, and if any of the TaskResponses reaches the QuorumThresholdPercentage for each quorum
 // (currently we only use a single quorum of the ERC20Mock token), it sends the aggregated TaskResponse and signature onchain.
 //
@@ -70,14 +73,25 @@ type Aggregator struct {
 	avsWriter        chainio.AvsWriterer
 	// aggregation related fields
 	blsAggregationService blsagg.BlsAggregationService
-	tasks                 map[types.TaskIndex]cstaskmanager.IIncredibleSquaringTaskManagerTask
+	tasks                 map[types.TaskIndex]cstaskmanager.IKYTTaskManagerTask
 	tasksMu               sync.RWMutex
-	taskResponses         map[types.TaskIndex]map[sdktypes.TaskResponseDigest]cstaskmanager.IIncredibleSquaringTaskManagerTaskResponse
+	taskResponses         map[types.TaskIndex]map[sdktypes.TaskResponseDigest]cstaskmanager.IKYTTaskManagerTaskResponse
 	taskResponsesMu       sync.RWMutex
+
+	httpServer *http.Server
+}
+
+type AddressToKYT struct {
+	Address string `json:"address`
 }
 
 // NewAggregator creates a new Aggregator with the provided config.
 func NewAggregator(c *config.Config) (*Aggregator, error) {
+
+	httpServer := &http.Server{
+		Addr:    ":8081",
+		Handler: http.DefaultServeMux,
+	}
 
 	avsReader, err := chainio.BuildAvsReaderFromConfig(c)
 	if err != nil {
@@ -94,7 +108,7 @@ func NewAggregator(c *config.Config) (*Aggregator, error) {
 	chainioConfig := sdkclients.BuildAllConfig{
 		EthHttpUrl:                 c.EthHttpRpcUrl,
 		EthWsUrl:                   c.EthWsRpcUrl,
-		RegistryCoordinatorAddr:    c.IncredibleSquaringRegistryCoordinatorAddr.String(),
+		RegistryCoordinatorAddr:    c.KYTRegistryCoordinatorAddr.String(),
 		OperatorStateRetrieverAddr: c.OperatorStateRetrieverAddr.String(),
 		AvsName:                    avsName,
 		PromMetricsIpPortAddress:   ":9090",
@@ -114,8 +128,9 @@ func NewAggregator(c *config.Config) (*Aggregator, error) {
 		serverIpPortAddr:      c.AggregatorServerIpPortAddr,
 		avsWriter:             avsWriter,
 		blsAggregationService: blsAggregationService,
-		tasks:                 make(map[types.TaskIndex]cstaskmanager.IIncredibleSquaringTaskManagerTask),
-		taskResponses:         make(map[types.TaskIndex]map[sdktypes.TaskResponseDigest]cstaskmanager.IIncredibleSquaringTaskManagerTaskResponse),
+		tasks:                 make(map[types.TaskIndex]cstaskmanager.IKYTTaskManagerTask),
+		taskResponses:         make(map[types.TaskIndex]map[sdktypes.TaskResponseDigest]cstaskmanager.IKYTTaskManagerTaskResponse),
+		httpServer:            httpServer,
 	}, nil
 }
 
@@ -124,15 +139,14 @@ func (agg *Aggregator) Start(ctx context.Context) error {
 	agg.logger.Infof("Starting aggregator rpc server.")
 	go agg.startServer(ctx)
 
-	// TODO(soubhik): refactor task generation/sending into a separate function that we can run as goroutine
-	ticker := time.NewTicker(10 * time.Second)
-	agg.logger.Infof("Aggregator set to send new task every 10 seconds...")
-	defer ticker.Stop()
-	taskNum := int64(0)
-	// ticker doesn't tick immediately, so we send the first task here
-	// see https://github.com/golang/go/issues/17601
-	_ = agg.sendNewTask(big.NewInt(taskNum))
-	taskNum++
+	// register endpoint for krnl node
+	http.HandleFunc("/send-task-KYT", agg.handleSendFromKRNLKYT)
+
+	go func() {
+		if err := agg.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			agg.logger.Errorf("HTTP server error: %v", err)
+		}
+	}()
 
 	for {
 		select {
@@ -141,13 +155,6 @@ func (agg *Aggregator) Start(ctx context.Context) error {
 		case blsAggServiceResp := <-agg.blsAggregationService.GetResponseChannel():
 			agg.logger.Info("Received response from blsAggregationService", "blsAggServiceResp", blsAggServiceResp)
 			agg.sendAggregatedResponseToContract(blsAggServiceResp)
-		case <-ticker.C:
-			err := agg.sendNewTask(big.NewInt(taskNum))
-			taskNum++
-			if err != nil {
-				// we log the errors inside sendNewTask() so here we just continue to the next task
-				continue
-			}
 		}
 	}
 }
@@ -193,14 +200,28 @@ func (agg *Aggregator) sendAggregatedResponseToContract(blsAggServiceResp blsagg
 	}
 }
 
+// handleSendFromKRNL handles incoming task
+func (agg *Aggregator) handleSendFromKRNLKYT(w http.ResponseWriter, r *http.Request) {
+	var address AddressToKYT
+	err := json.NewDecoder(r.Body).Decode(&address)
+	if err != nil {
+		agg.logger.Error("Decoding request body has failed", "err", err)
+	}
+	if address.Address != "" {
+		err := agg.sendNewTaskKYT(&address.Address)
+		if err != nil {
+			agg.logger.Error("Aggregator failed to send address to kyt", "err", err)
+		}
+	}
+}
+
 // sendNewTask sends a new task to the task manager contract, and updates the Task dict struct
 // with the information of operators opted into quorum 0 at the block of task creation.
-func (agg *Aggregator) sendNewTask(numToSquare *big.Int) error {
-	agg.logger.Info("Aggregator sending new task", "numberToSquare", numToSquare)
-	// Send number to square to the task manager contract
-	newTask, taskIndex, err := agg.avsWriter.SendNewTaskNumberToSquare(context.Background(), numToSquare, types.QUORUM_THRESHOLD_NUMERATOR, types.QUORUM_NUMBERS)
+func (agg *Aggregator) sendNewTaskKYT(address *string) error {
+	agg.logger.Info("Aggregator sending new task", "address", address)
+	// Send address to kyt to the task manager contract
+	newTask, taskIndex, err := agg.avsWriter.SendNewTaskKYT(context.Background(), common.HexToAddress(*address), types.QUORUM_THRESHOLD_NUMERATOR, types.QUORUM_NUMBERS)
 	if err != nil {
-		agg.logger.Error("Aggregator failed to send number to square", "err", err)
 		return err
 	}
 

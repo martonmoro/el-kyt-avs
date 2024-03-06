@@ -33,7 +33,7 @@ type Config struct {
 	EthHttpClient                             eth.EthClient
 	EthWsClient                               eth.EthClient
 	OperatorStateRetrieverAddr                common.Address
-	IncredibleSquaringRegistryCoordinatorAddr common.Address
+	KYTRegistryCoordinatorAddr 				  common.Address
 	AggregatorServerIpPortAddr                string
 	RegisterOperatorOnStartup                 bool
 	// json:"-" skips this field when marshaling (only used for logging to stdout), since SignerFn doesnt implement marshalJson
@@ -52,10 +52,10 @@ type ConfigRaw struct {
 }
 
 // These are read from CredibleSquaringDeploymentFileFlag
-type IncredibleSquaringDeploymentRaw struct {
-	Addresses IncredibleSquaringContractsRaw `json:"addresses"`
+type KYTDeploymentRaw struct {
+	Addresses KYTContractsRaw `json:"addresses"`
 }
-type IncredibleSquaringContractsRaw struct {
+type KYTContractsRaw struct {
 	RegistryCoordinatorAddr    string `json:"registryCoordinator"`
 	OperatorStateRetrieverAddr string `json:"operatorStateRetriever"`
 }
@@ -71,12 +71,12 @@ func NewConfig(ctx *cli.Context) (*Config, error) {
 		sdkutils.ReadYamlConfig(configFilePath, &configRaw)
 	}
 
-	var credibleSquaringDeploymentRaw IncredibleSquaringDeploymentRaw
-	credibleSquaringDeploymentFilePath := ctx.GlobalString(CredibleSquaringDeploymentFileFlag.Name)
-	if _, err := os.Stat(credibleSquaringDeploymentFilePath); errors.Is(err, os.ErrNotExist) {
-		panic("Path " + credibleSquaringDeploymentFilePath + " does not exist")
+	var kytDeploymentRaw KYTDeploymentRaw
+	kytDeploymentFilePath := ctx.GlobalString(KYTDeploymentFileFlag.Name)
+	if _, err := os.Stat(kytDeploymentFilePath); errors.Is(err, os.ErrNotExist) {
+		panic("Path " + kytDeploymentFilePath + " does not exist")
 	}
-	sdkutils.ReadJsonConfig(credibleSquaringDeploymentFilePath, &credibleSquaringDeploymentRaw)
+	sdkutils.ReadJsonConfig(kytDeploymentFilePath, &kytDeploymentRaw)
 
 	logger, err := sdklogging.NewZapLogger(configRaw.Environment)
 	if err != nil {
@@ -130,8 +130,8 @@ func NewConfig(ctx *cli.Context) (*Config, error) {
 		EthHttpRpcUrl:              configRaw.EthRpcUrl,
 		EthHttpClient:              ethRpcClient,
 		EthWsClient:                ethWsClient,
-		OperatorStateRetrieverAddr: common.HexToAddress(credibleSquaringDeploymentRaw.Addresses.OperatorStateRetrieverAddr),
-		IncredibleSquaringRegistryCoordinatorAddr: common.HexToAddress(credibleSquaringDeploymentRaw.Addresses.RegistryCoordinatorAddr),
+		OperatorStateRetrieverAddr: common.HexToAddress(kytDeploymentRaw.Addresses.OperatorStateRetrieverAddr),
+		KYTRegistryCoordinatorAddr: common.HexToAddress(kytDeploymentRaw.Addresses.RegistryCoordinatorAddr),
 		AggregatorServerIpPortAddr:                configRaw.AggregatorServerIpPortAddr,
 		RegisterOperatorOnStartup:                 configRaw.RegisterOperatorOnStartup,
 		SignerFn:                                  signerV2,
@@ -147,8 +147,8 @@ func (c *Config) validate() {
 	if c.OperatorStateRetrieverAddr == common.HexToAddress("") {
 		panic("Config: BLSOperatorStateRetrieverAddr is required")
 	}
-	if c.IncredibleSquaringRegistryCoordinatorAddr == common.HexToAddress("") {
-		panic("Config: IncredibleSquaringRegistryCoordinatorAddr is required")
+	if c.KYTRegistryCoordinatorAddr == common.HexToAddress("") {
+		panic("Config: KYTRegistryCoordinatorAddr is required")
 	}
 }
 
@@ -159,10 +159,10 @@ var (
 		Required: true,
 		Usage:    "Load configuration from `FILE`",
 	}
-	CredibleSquaringDeploymentFileFlag = cli.StringFlag{
-		Name:     "credible-squaring-deployment",
+	KYTDeploymentFileFlag = cli.StringFlag{
+		Name:     "kyt-deployment",
 		Required: true,
-		Usage:    "Load credible squaring contract addresses from `FILE`",
+		Usage:    "Load kyt contract addresses from `FILE`",
 	}
 	EcdsaPrivateKeyFlag = cli.StringFlag{
 		Name:     "ecdsa-private-key",
@@ -175,7 +175,7 @@ var (
 
 var requiredFlags = []cli.Flag{
 	ConfigFileFlag,
-	CredibleSquaringDeploymentFileFlag,
+	KYTDeploymentFileFlag,
 	EcdsaPrivateKeyFlag,
 }
 

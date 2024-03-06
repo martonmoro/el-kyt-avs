@@ -8,9 +8,9 @@ import (
 
 	"github.com/urfave/cli"
 
-	"github.com/Layr-Labs/incredible-squaring-avs/core/config"
-	"github.com/Layr-Labs/incredible-squaring-avs/operator"
-	"github.com/Layr-Labs/incredible-squaring-avs/types"
+	"github.com/martonmoro/el-kyt-avs/core/config"
+	"github.com/martonmoro/el-kyt-avs/operator"
+	"github.com/martonmoro/el-kyt-avs/types"
 
 	sdkutils "github.com/Layr-Labs/eigensdk-go/utils"
 )
@@ -18,9 +18,9 @@ import (
 func main() {
 	app := cli.NewApp()
 	app.Flags = []cli.Flag{config.ConfigFileFlag}
-	app.Name = "credible-squaring-operator"
-	app.Usage = "Credible Squaring Operator"
-	app.Description = "Service that reads numbers onchain, squares, signs, and sends them to the aggregator."
+	app.Name = "kyt-operator"
+	app.Usage = "KYT Operator"
+	app.Description = "Service that reads addresses onchain, does kyt, signs, and sends them to the aggregator."
 
 	app.Action = operatorMain
 	err := app.Run(os.Args)
